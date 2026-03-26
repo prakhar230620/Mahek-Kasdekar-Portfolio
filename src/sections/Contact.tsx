@@ -7,15 +7,29 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('submitting')
-    // Simulate API call
-    setTimeout(() => {
-      setStatus('success')
-      setFormData({ name: '', email: '', subject: '', message: '' })
-      setTimeout(() => setStatus('idle'), 3000)
-    }, 1500)
+    
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      if (res.ok) {
+        setStatus('success')
+        setFormData({ name: '', email: '', subject: '', message: '' })
+        setTimeout(() => setStatus('idle'), 4000)
+      } else {
+        setStatus('idle')
+        alert('Failed to send message. Please try again later.')
+      }
+    } catch {
+      setStatus('idle')
+      alert('Network error. Please try again.')
+    }
   }
 
   return (
@@ -141,7 +155,7 @@ export default function Contact() {
               <div>
                 <h4 className="text-sm font-semibold text-[#6b6b8a] mb-1">Email</h4>
                 <a href="mailto:mahek@example.com" className="text-lg font-display italic text-[#1a1a2e] hover:text-[#9b4f6a] transition-colors">
-                  mahek@example.com
+                  mahekkasdekar@gmail.com
                 </a>
               </div>
             </div>
@@ -152,8 +166,7 @@ export default function Contact() {
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-[#6b6b8a] mb-1">Location</h4>
-                <p className="text-lg font-display italic text-[#1a1a2e]">New Delhi, India</p>
-                <p className="text-sm text-[#6b6b8a] mt-1">Delhi University Campus area</p>
+                <p className="text-lg font-display italic text-[#1a1a2e]">Indore, India</p>
               </div>
             </div>
 

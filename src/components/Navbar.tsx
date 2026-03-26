@@ -111,11 +111,10 @@ export default function Navbar() {
               <button
                 key={link.href}
                 onClick={() => handleNav(link.href)}
-                className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  active === link.href
+                className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${active === link.href
                     ? 'bg-[rgba(244,167,180,0.2)] text-[#1a1a2e]'
                     : 'text-[#6b6b8a] hover:text-[#1a1a2e] hover:bg-white/30'
-                }`}
+                  }`}
               >
                 {link.label}
               </button>

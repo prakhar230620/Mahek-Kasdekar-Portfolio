@@ -139,7 +139,7 @@ export default function Hero() {
                 className="clay inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#9b4f6a]"
                 style={{ background: 'linear-gradient(135deg, #ffe8ee, #f3e8ff)', fontSize: '13px' }}
               >
-                ✦ Portfolio 2025
+                ✦ Portfolio 2026
               </span>
             </motion.div>
 
@@ -162,7 +162,7 @@ export default function Hero() {
               variants={itemVariants}
               className="max-w-lg text-[17px] text-[#6b6b8a] leading-[1.75]"
             >
-              A 20-year-old history graduate from Delhi University with a love for words, colour, and the quiet beauty of everyday moments.
+              A 20-year-old history graduated from Delhi University with a love for words, colour, and the quiet beauty of everyday moments.
             </motion.p>
 
             {/* CTAs */}

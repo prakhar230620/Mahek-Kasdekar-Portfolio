@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { personalityTraits } from '@/lib/portfolioData'
+import { profileImage } from '@/lib/profileImage'
 
 const traitColors = [
   'linear-gradient(135deg, #ffe8ee, #f3e8ff)',
@@ -41,18 +42,20 @@ export default function About() {
             transition={{ duration: 0.7 }}
             className="relative"
           >
-            <div className="glass relative aspect-[3/4] w-full max-w-sm mx-auto overflow-hidden rounded-3xl">
-              {/* Coloured gradient placeholder */}
-              <div
-                className="absolute inset-0"
-                style={{ background: 'linear-gradient(160deg, rgba(249,203,167,0.6) 0%, rgba(244,167,180,0.5) 40%, rgba(201,184,245,0.5) 100%)' }}
+            <div className="glass relative aspect-[3/4] w-full max-w-sm mx-auto overflow-hidden rounded-3xl group">
+              {/* Profile Image */}
+              <Image
+                src={profileImage}
+                alt="Mahek Kasdekar"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                unoptimized
               />
-              {/* Decorative shapes inside */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-30">
-                <div className="w-40 h-40 rounded-full" style={{ background: 'rgba(244,167,180,0.6)' }} />
-              </div>
-              <div className="absolute bottom-8 left-8 right-8">
-                <p className="text-center font-display italic text-2xl text-white/80">Mahek</p>
+              {/* Subtle Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+              
+              <div className="absolute bottom-8 left-8 right-8 z-10">
+                <p className="text-center font-display italic text-2xl text-white/90 drop-shadow-md">Mahek</p>
               </div>
             </div>
             {/* Floating badge */}
@@ -62,7 +65,7 @@ export default function About() {
               className="clay absolute -bottom-4 -right-4 lg:right-0 px-4 py-2 text-xs font-semibold text-[#6b3fa0]"
               style={{ background: 'linear-gradient(135deg, #f3e8ff, #ffe8ee)' }}
             >
-              Delhi University · History · 2024–27
+              Delhi University · History · 2023–25
             </motion.div>
           </motion.div>
 

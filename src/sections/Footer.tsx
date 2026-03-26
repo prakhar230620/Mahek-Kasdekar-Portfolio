@@ -9,7 +9,7 @@ export default function Footer() {
 
         {/* Center: Copyright */}
         <p className="text-sm font-medium text-[#6b6b8a]">
-          © 2025 Mahek Kasdekar · Made with <span className="text-[#f4a7b4]">♡</span>
+          © 2026 Mahek Kasdekar · Made with <span className="text-[#f4a7b4]">♡</span>
         </p>
 
         {/* Right: Links */}

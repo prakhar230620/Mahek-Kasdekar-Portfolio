@@ -1,7 +1,7 @@
 'use client'
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { galleryItems } from '@/lib/portfolioData'
+// import { galleryItems } from '@/lib/portfolioData' // No longer needed
 
 const gradients = [
   'linear-gradient(135deg, rgba(244,167,180,0.5), rgba(249,203,167,0.4))',
@@ -24,9 +24,28 @@ const aspectH: Record<string, string> = {
 
 export default function Gallery() {
   const carouselRef = useRef<HTMLDivElement>(null)
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const res = await fetch('/api/admin/gallery')
+        if (res.ok) {
+          const data = await res.json()
+          setItems(data.items)
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchGallery()
+  }, [])
 
   // Duplicate items for infinite loop
-  const carouselItems = [...galleryItems, ...galleryItems]
+  const carouselItems = items.length > 0 ? [...items, ...items] : []
 
   return (
     <section id="gallery" className="py-24">
@@ -57,23 +76,25 @@ export default function Gallery() {
         <div className="flex gap-4 animate-marquee group-hover:animate-marquee-paused w-max">
           {carouselItems.map((item, i) => (
             <motion.div
-              key={`${item.id}-${i}`}
+              key={`${item._id}-${i}`}
               whileHover={{ scale: 1.04 }}
               className="glass flex-shrink-0 w-52 overflow-hidden cursor-pointer"
               style={{ borderRadius: '20px', height: '220px' }}
             >
               <div
-                className="w-full h-full flex items-end p-3"
-                style={{ background: gradients[i % gradients.length] }}
+                className="w-full h-full flex items-end p-3 bg-cover bg-center"
+                style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: gradients[i % gradients.length] }}
               >
-                <p className="text-xs text-[#6b6b8a] font-medium leading-tight opacity-70">{item.alt}</p>
+                <p className="text-xs text-[#6b6b8a] font-medium leading-tight opacity-70 bg-white/40 backdrop-blur-sm p-1 rounded">
+                  {item.alt}
+                </p>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Bento grid */}
+      {/* Bento grid - Dynamic first 5 items */}
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -82,36 +103,24 @@ export default function Gallery() {
           transition={{ duration: 0.7 }}
           className="grid grid-cols-2 lg:grid-cols-3 gap-4"
         >
-          {/* Large cell 1 */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="glass col-span-1 lg:col-span-2 overflow-hidden row-span-2 cursor-pointer"
-            style={{ borderRadius: '20px', minHeight: '320px' }}
-          >
-            <div
-              className="w-full h-full min-h-[320px] flex items-end p-5"
-              style={{ background: gradients[0] }}
-            >
-              <p className="font-display italic text-lg text-[#6b6b8a] opacity-70">Golden Hour</p>
-            </div>
-          </motion.div>
-
-          {/* Small cells */}
-          {[1, 2, 3, 4].map((idx) => (
+          {items.slice(0, 5).map((item, idx) => (
             <motion.div
-              key={idx}
-              whileHover={{ scale: 1.03 }}
-              className="glass overflow-hidden cursor-pointer"
-              style={{ borderRadius: '20px', minHeight: '150px' }}
+              key={item._id}
+              whileHover={{ scale: 1.02 }}
+              className={`glass overflow-hidden cursor-pointer ${idx === 0 ? 'col-span-1 lg:col-span-2 row-span-2' : ''}`}
+              style={{ borderRadius: '20px', minHeight: idx === 0 ? '320px' : '150px' }}
             >
               <div
-                className="w-full h-full min-h-[150px] flex items-end p-4"
-                style={{ background: gradients[idx] }}
+                className="w-full h-full flex items-end p-5 bg-cover bg-center"
+                style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: gradients[idx % gradients.length] }}
               >
-                <p className="text-xs text-[#6b6b8a] font-medium opacity-70">{galleryItems[idx]?.alt}</p>
+                <p className="font-display italic text-lg text-[#6b6b8a] opacity-70 bg-white/40 backdrop-blur-sm px-2 rounded">
+                  {item.alt}
+                </p>
               </div>
             </motion.div>
           ))}
+          {items.length === 0 && <p className="col-span-3 text-center text-[#6b6b8a] opacity-50 italic">No images in gallery yet.</p>}
         </motion.div>
       </div>
     </section>

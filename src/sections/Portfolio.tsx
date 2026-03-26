@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye } from 'lucide-react'
 import { portfolioItems, filterCategories, FilterCategory } from '@/lib/portfolioData'
@@ -14,10 +14,29 @@ const placeholderGradients: Record<string, string> = {
 
 export default function Portfolio() {
   const [active, setActive] = useState<FilterCategory>('All')
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPortfolio = async () => {
+      try {
+        const res = await fetch('/api/admin/portfolio')
+        if (res.ok) {
+          const data = await res.json()
+          setItems(data.items)
+        }
+      } catch (error) {
+        console.error('Failed to fetch portfolio', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPortfolio()
+  }, [])
 
   const filtered = useMemo(
-    () => (active === 'All' ? portfolioItems : portfolioItems.filter((p) => p.category === active)),
-    [active]
+    () => (active === 'All' ? items : items.filter((p) => p.category === active)),
+    [active, items]
   )
 
   const aspectRatio: Record<string, string> = {
@@ -103,15 +122,16 @@ export default function Portfolio() {
                   className="glass group relative overflow-hidden cursor-pointer"
                   style={{ borderRadius: '20px' }}
                 >
-                  {/* Image placeholder */}
+                  {/* Image placeholder or Base64 Image */}
                   <div
-                    className={`w-full ${aspectRatio[item.aspect]} relative`}
-                    style={{ background: placeholderGradients[item.category] }}
+                    className={`w-full ${aspectRatio[item.aspect]} relative bg-cover bg-center`}
+                    style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: placeholderGradients[item.category] }}
                   >
-                    {/* Decorative element */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                      <div className="w-16 h-16 rounded-full bg-white/50" />
-                    </div>
+                    {!item.base64Image && (
+                      <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                        <div className="w-16 h-16 rounded-full bg-white/50" />
+                      </div>
+                    )}
 
                     {/* Hover overlay */}
                     <motion.div
