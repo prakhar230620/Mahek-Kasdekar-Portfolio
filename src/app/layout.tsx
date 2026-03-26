@@ -29,15 +29,18 @@ export const metadata: Metadata = {
   },
 }
 
+import { Analytics } from '@vercel/analytics/react'
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`} data-scroll-behavior="smooth">
       <body className="font-body antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   )

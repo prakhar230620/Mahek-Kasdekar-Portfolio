@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [portfolio, setPortfolio] = useState<any[]>([])
   const [gallery, setGallery] = useState<any[]>([]) // Added gallery
   const [messages, setMessages] = useState<any[]>([])
+  const [stats, setStats] = useState({ portfolio: 0, gallery: 0, messages: 0 })
   const [loading, setLoading] = useState(true)
 
   // Form State
@@ -48,6 +49,12 @@ export default function AdminDashboard() {
       if (mRes.ok) {
         const mData = await mRes.json()
         setMessages(mData.messages)
+      }
+
+      const sRes = await fetch('/api/admin/stats')
+      if (sRes.ok) {
+        const sData = await sRes.json()
+        setStats(sData.data)
       }
     } catch (err) {
       console.error(err)
@@ -158,10 +165,13 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleLogout = async () => {
-    // Basic logout by expiring cookie via a simple fetch route or client-side document.cookie
-    document.cookie = 'admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-    router.push('/admin/login')
+  const handleLogout = () => {
+    // Clear cookie by setting expiry in past
+    document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    // Clear local storage if any (though we use cookies)
+    localStorage.removeItem('admin_token')
+    // Redirect to login
+    router.replace('/admin/login')
   }
 
   return (
@@ -181,17 +191,28 @@ export default function AdminDashboard() {
 
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="glass p-6 flex flex-col gap-2">
-            <span className="text-[#6b6b8a] font-semibold text-sm">Total Portfolio Items</span>
-            <span className="font-display text-4xl">{portfolio.length}</span>
+          <div className="glass p-6 flex flex-col gap-2 relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-[#c9b8f5] group-hover:scale-110 transition-transform duration-500">
+               <ImageIcon size={100} />
+            </div>
+            <span className="text-[#6b6b8a] font-semibold text-sm uppercase tracking-wider">Total Portfolio Items</span>
+            <span className="font-display text-4xl font-bold bg-gradient-to-r from-[#6b3fa0] to-[#f4a7b4] bg-clip-text text-transparent">{stats.portfolio}</span>
           </div>
-          <div className="glass p-6 flex flex-col gap-2">
-            <span className="text-[#6b6b8a] font-semibold text-sm">Total Gallery Items</span>
-            <span className="font-display text-4xl">{gallery.length}</span>
+          
+          <div className="glass p-6 flex flex-col gap-2 relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-[#c9b8f5] group-hover:scale-110 transition-transform duration-500">
+               <ImageIcon size={100} />
+            </div>
+            <span className="text-[#6b6b8a] font-semibold text-sm uppercase tracking-wider">Gallery Images</span>
+            <span className="font-display text-4xl font-bold bg-gradient-to-r from-[#6b3fa0] to-[#f4a7b4] bg-clip-text text-transparent">{stats.gallery}</span>
           </div>
-          <div className="glass p-6 flex flex-col gap-2">
-            <span className="text-[#6b6b8a] font-semibold text-sm">Total Messages</span>
-            <span className="font-display text-4xl">{messages.length}</span>
+
+          <div className="glass p-6 flex flex-col gap-2 relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-[#c9b8f5] group-hover:scale-110 transition-transform duration-500">
+               <MessageSquare size={100} />
+            </div>
+            <span className="text-[#6b6b8a] font-semibold text-sm uppercase tracking-wider">Contact Logs</span>
+            <span className="font-display text-4xl font-bold bg-gradient-to-r from-[#6b3fa0] to-[#f4a7b4] bg-clip-text text-transparent">{stats.messages}</span>
           </div>
         </div>
 

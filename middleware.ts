@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('admin_token')?.value
     
     if (!token) {
+      console.log('No token found, redirecting to login')
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
     
@@ -18,8 +19,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next()
     } catch (err) {
       // Invalid token
-      console.error('Invalid token', err)
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      console.error('Invalid token, redirecting to login', err)
+      // Redirect to login AND clear the invalid cookie
+      const response = NextResponse.redirect(new URL('/admin/login', request.url))
+      response.cookies.delete('admin_token')
+      return response
     }
   }
   
@@ -27,5 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin', '/admin/:path*'],
 }
