@@ -3,6 +3,8 @@ import connectToDatabase from '@/lib/mongodb'
 import { PortfolioItem } from '@/models/PortfolioItem'
 import { GalleryItem } from '@/models/GalleryItem'
 import { Message } from '@/models/Message'
+import { Book } from '@/models/Book'
+import Timeline from '@/models/Timeline'
 
 export async function GET() {
   try {
@@ -11,6 +13,8 @@ export async function GET() {
     const portfolioCount = await PortfolioItem.countDocuments()
     const galleryCount = await GalleryItem.countDocuments()
     const messageCount = await Message.countDocuments()
+    const bookCount = await Book.countDocuments()
+    const timelineCount = await Timeline.countDocuments()
 
     return NextResponse.json({
       success: true,
@@ -18,6 +22,8 @@ export async function GET() {
         portfolio: portfolioCount,
         gallery: galleryCount,
         messages: messageCount,
+        books: bookCount,
+        timeline: timelineCount,
       },
     })
   } catch (error: any) {

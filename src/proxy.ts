@@ -2,14 +2,19 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  if (
+    (pathname.startsWith('/admin') && pathname !== '/admin/login') ||
+    (pathname.startsWith('/api/admin') && pathname !== '/api/admin/auth')
+  ) {
     const token = request.cookies.get('admin_token')?.value
     
     if (!token) {
-      console.log('No token found, redirecting to login')
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+      }
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
     
@@ -20,6 +25,11 @@ export async function middleware(request: NextRequest) {
     } catch (err) {
       // Invalid token
       console.error('Invalid token, redirecting to login', err)
+      
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ success: false, message: 'Invalid token' }, { status: 401 })
+      }
+      
       // Redirect to login AND clear the invalid cookie
       const response = NextResponse.redirect(new URL('/admin/login', request.url))
       response.cookies.delete('admin_token')
@@ -31,5 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*'],
+  matcher: ['/admin', '/admin/:path*', '/api/admin/:path*'],
 }

@@ -175,13 +175,33 @@ export default function Contact() {
               <h4 className="font-display italic font-semibold text-xl text-[#1a1a2e] mb-6">Find me elsewhere</h4>
               <div className="flex items-center gap-4">
                 {[
-                  { icon: Instagram, color: 'text-[#E1306C]', bg: 'hover:bg-[#E1306C]/10', label: 'Instagram' },
-                  { icon: Linkedin, color: 'text-[#0077b5]', bg: 'hover:bg-[#0077b5]/10', label: 'LinkedIn' },
-                  { icon: Globe, color: 'text-[#1769ff]', bg: 'hover:bg-[#1769ff]/10', label: 'Behance' },
+                  { 
+                    icon: Instagram, 
+                    color: 'text-[#E1306C]', 
+                    bg: 'hover:bg-[#E1306C]/10', 
+                    label: 'Instagram',
+                    href: 'https://www.instagram.com/mahek__k0911?igsh=MWFkMmplbnYxY2tjeQ==' 
+                  },
+                  { 
+                    icon: Linkedin, 
+                    color: 'text-[#0077b5]', 
+                    bg: 'hover:bg-[#0077b5]/10', 
+                    label: 'LinkedIn',
+                    href: 'https://linkedin.com/in/mahek-kasdekar' 
+                  },
+                  { 
+                    icon: Globe, 
+                    color: 'text-[#1769ff]', 
+                    bg: 'hover:bg-[#1769ff]/10', 
+                    label: 'Portfolio',
+                    href: 'https://behance.net/mahek' 
+                  },
                 ].map((social, i) => (
                   <motion.a
                     key={i}
-                    href="#"
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -4 }}
                     whileTap={{ scale: 0.9 }}
                     className={`clay flex w-12 h-12 items-center justify-center rounded-full transition-colors ${social.color} ${social.bg}`}

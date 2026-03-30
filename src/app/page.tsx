@@ -8,6 +8,7 @@ import About from '@/sections/About'
 import Education from '@/sections/Education'
 import Skills from '@/sections/Skills'
 import Portfolio from '@/sections/Portfolio'
+import Books from '@/sections/Books'
 import Gallery from '@/sections/Gallery'
 import Contact from '@/sections/Contact'
 import Footer from '@/sections/Footer'
@@ -26,6 +27,7 @@ export default function Home() {
         <Education />
         <Skills />
         <Portfolio />
+        <Books />
         <Gallery />
         <Contact />
       </div>

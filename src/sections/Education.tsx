@@ -1,12 +1,12 @@
 'use client'
 import { motion } from 'framer-motion'
 import { GraduationCap, BookOpen, School } from 'lucide-react'
-import { timelineItems } from '@/lib/portfolioData'
+import { useState, useEffect } from 'react'
 
 const iconMap = {
-  graduation: GraduationCap,
-  book: BookOpen,
-  school: School,
+  graduation: '🎓',
+  book: '📖',
+  school: '🏫',
 }
 
 const cardGradients = [
@@ -16,9 +16,29 @@ const cardGradients = [
 ]
 
 export default function Education() {
+  const [timelineItems, setTimelineItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchTimeline = async () => {
+      try {
+        const res = await fetch('/api/admin/timeline')
+        if (res.ok) {
+          const data = await res.json()
+          setTimelineItems(data.items)
+        }
+      } catch (err) {
+        console.error('Failed to fetch timeline:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTimeline()
+  }, [])
+
   return (
     <section id="education" className="py-24 px-6 lg:px-12">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-4xl">
         {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -28,10 +48,10 @@ export default function Education() {
           className="mb-16 text-center"
         >
           <h2 className="font-display italic font-semibold text-[#1a1a2e] mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
-            Education
+            Education & Achievements
           </h2>
           <div
-            className="mx-auto h-1 w-24 rounded-full"
+            className="mx-auto h-1 w-32 rounded-full"
             style={{ background: 'linear-gradient(90deg, #f4a7b4, #c9b8f5, #f9cba7)' }}
           />
         </motion.div>
@@ -45,56 +65,62 @@ export default function Education() {
           />
 
           <div className="flex flex-col gap-8">
-            {timelineItems.map((item, i) => {
-              const Icon = iconMap[item.icon]
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.6, delay: i * 0.15 }}
-                  className="relative flex gap-6"
-                >
-                  {/* Timeline dot + icon */}
-                  <div className="relative z-10 flex-shrink-0 hidden sm:flex flex-col items-center">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
-                      style={{ background: cardGradients[i], boxShadow: '0 0 0 4px rgba(255,255,255,0.8), 0 0 16px rgba(244,167,180,0.4)' }}
-                    >
-                      <Icon size={18} className="text-[#9b4f6a]" />
-                    </div>
-                  </div>
-
-                  {/* Card */}
+            {loading ? (
+              <p className="text-center text-[#6b6b8a] animate-pulse">Loading timeline...</p>
+            ) : timelineItems.length > 0 ? (
+              timelineItems.map((item, i) => {
+                const icon = item.icon || '🎓'
+                return (
                   <motion.div
-                    whileHover={{ scale: 1.02, boxShadow: '0 16px 48px rgba(180,120,140,0.18)' }}
-                    className="glass flex-1 p-6"
-                    style={{ borderRadius: '20px' }}
+                    key={item._id || i}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.6, delay: i * 0.15 }}
+                    className="relative flex gap-6"
                   >
-                    <div className="flex sm:hidden items-center gap-3 mb-3">
+                    {/* Timeline dot + emoji */}
+                    <div className="relative z-10 flex-shrink-0 hidden sm:flex flex-col items-center">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center"
-                        style={{ background: cardGradients[i] }}
+                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg text-xl"
+                        style={{ background: cardGradients[i % cardGradients.length], boxShadow: '0 0 0 4px rgba(255,255,255,0.8), 0 0 16px rgba(244,167,180,0.4)' }}
                       >
-                        <Icon size={14} className="text-[#9b4f6a]" />
+                        {icon}
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                      <h3 className="font-display italic font-semibold text-[#1a1a2e] text-xl">{item.title}</h3>
-                      <span
-                        className="clay px-3 py-1 text-xs font-medium text-[#9b4f6a] whitespace-nowrap"
-                        style={{ background: cardGradients[i] }}
-                      >
-                        {item.period}
-                      </span>
-                    </div>
-                    <p className="text-sm font-semibold text-[#c9b8f5] mb-2">{item.institution}</p>
-                    <p className="text-[15px] text-[#6b6b8a] leading-[1.7]">{item.description}</p>
+
+                    {/* Card */}
+                    <motion.div
+                      whileHover={{ scale: 1.02, boxShadow: '0 16px 48px rgba(180,120,140,0.18)' }}
+                      className="glass flex-1 p-6"
+                      style={{ borderRadius: '20px' }}
+                    >
+                      <div className="flex sm:hidden items-center gap-3 mb-3">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                          style={{ background: cardGradients[i % cardGradients.length] }}
+                        >
+                          {icon}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                        <h3 className="font-display italic font-semibold text-[#1a1a2e] text-xl">{item.title}</h3>
+                        <span
+                          className="clay px-3 py-1 text-xs font-medium text-[#9b4f6a] whitespace-nowrap"
+                          style={{ background: cardGradients[i % cardGradients.length] }}
+                        >
+                          {item.period}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-[#c9b8f5] mb-2">{item.institution}</p>
+                      <p className="text-[15px] text-[#6b6b8a] leading-[1.7]">{item.description}</p>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              )
-            })}
+                )
+              })
+            ) : (
+              <p className="text-center text-[#6b6b8a]">No timeline data found.</p>
+            )}
           </div>
         </div>
       </div>

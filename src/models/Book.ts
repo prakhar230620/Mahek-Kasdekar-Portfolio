@@ -1,28 +1,29 @@
 import mongoose, { Schema, Document } from 'mongoose'
 import { compressData, decompressData, compressToBuffer, decompressFromBuffer } from '@/lib/compression'
 
-export interface IPortfolioItem extends Document {
+export interface IBook extends Document {
   title: string
   description: string
-  category: string
-  aspect: string
-  tag: string
-  tagColor: string
+  readLink: string
   base64Image: any
+  base64Pdf: any
 }
 
-const PortfolioItemSchema = new Schema(
+const BookSchema = new Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true, get: decompressData, set: compressData },
-    category: { type: String, required: true },
-    aspect: { type: String, required: true, enum: ['square', 'portrait', 'landscape'] },
-    tag: { type: String, required: true },
-    tagColor: { type: String, required: true },
+    readLink: { type: String, default: '' },
     base64Image: { 
       type: Buffer, 
       required: true, 
       get: (v: any) => decompressFromBuffer(v, 'image/jpeg'), 
+      set: compressToBuffer 
+    },
+    base64Pdf: { 
+      type: Buffer, 
+      default: '', 
+      get: (v: any) => decompressFromBuffer(v, 'application/pdf'), 
       set: compressToBuffer 
     },
   },
@@ -33,5 +34,4 @@ const PortfolioItemSchema = new Schema(
   }
 )
 
-export const PortfolioItem =
-  mongoose.models.PortfolioItem || mongoose.model<IPortfolioItem>('PortfolioItem', PortfolioItemSchema)
+export const Book = mongoose.models.Book || mongoose.model<IBook>('Book', BookSchema)
