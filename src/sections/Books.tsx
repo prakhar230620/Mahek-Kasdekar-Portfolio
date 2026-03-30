@@ -87,9 +87,16 @@ export default function Books() {
                       whileHover={{ scale: 1.05, rotateY: -10 }} 
                       transition={{ type: "spring", stiffness: 300 }}
                       style={{ perspective: 1000 }}
-                      className="relative z-10 w-2/5 md:w-1/2 aspect-[2/3] rounded-sm shadow-[10px_10px_15px_rgba(0,0,0,0.15),-1px_0px_0px_rgba(255,255,255,0.3)_inset] bg-cover bg-center"
+                      className="relative z-10 w-2/5 md:w-1/2 aspect-[2/3] rounded-sm shadow-[10px_10px_15px_rgba(0,0,0,0.15),-1px_0px_0px_rgba(255,255,255,0.3)_inset] bg-[#fdf2f8] bg-cover bg-center"
                     >
-                      <div className="w-full h-full bg-cover bg-center rounded-sm" style={{ backgroundImage: `url(${book.base64Image})` }} />
+                      {book.base64Image ? (
+                        <div className="w-full h-full bg-cover bg-center rounded-sm" style={{ backgroundImage: `url('${book.base64Image}')` }} />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-[#6b6b8a]/30 p-4 text-center">
+                          <BookOpen size={24} className="mb-2" />
+                          <span className="text-[10px] uppercase font-bold tracking-tighter">No Cover</span>
+                        </div>
+                      )}
                       {/* Spine illusion */}
                       <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-r from-black/20 to-transparent" />
                     </motion.div>

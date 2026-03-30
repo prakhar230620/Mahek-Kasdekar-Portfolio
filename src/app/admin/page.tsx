@@ -471,7 +471,7 @@ export default function AdminDashboard() {
                       {portfolio.map((item) => (
                         <tr key={item._id} className="border-b border-[#c9b8f5]/10 hover:bg-white/10 transition-colors">
                           <td className="p-4">
-                            <div className="w-12 h-12 rounded-lg bg-cover bg-center overflow-hidden" style={{ backgroundImage: `url(${item.base64Image})` }} />
+                            <div className="w-12 h-12 rounded-lg bg-cover bg-center overflow-hidden" style={{ backgroundImage: `url('${item.base64Image}')` }} />
                           </td>
                           <td className="p-4 font-medium">{item.title}</td>
                           <td className="p-4"><span className={`px-3 py-1 text-xs rounded-full ${item.tagColor}`}>{item.category}</span></td>
@@ -532,7 +532,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {gallery.map((item) => (
                     <div key={item._id} className="glass relative group overflow-hidden" style={{ borderRadius: '15px' }}>
-                      <div className="aspect-square bg-cover bg-center" style={{ backgroundImage: `url(${item.base64Image})` }} />
+                      <div className="aspect-square bg-cover bg-center" style={{ backgroundImage: `url('${item.base64Image}')` }} />
                       <button onClick={() => handleDeleteGallery(item._id)} className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                         <Trash2 size={16} />
                       </button>
@@ -590,7 +590,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {books.map((item) => (
                     <div key={item._id} className="glass p-5 flex gap-4 relative group" style={{ borderRadius: '15px' }}>
-                      <div className="w-24 h-32 bg-cover bg-center rounded drop-shadow flex-shrink-0" style={{ backgroundImage: `url(${item.base64Image})` }} />
+                      <div className="w-24 h-32 bg-cover bg-center rounded drop-shadow flex-shrink-0" style={{ backgroundImage: `url('${item.base64Image}')` }} />
                       <div className="flex flex-col">
                         <h4 className="font-semibold text-lg text-[#1a1a2e] leading-tight mb-1">{item.title}</h4>
                         <p className="text-sm text-[#6b6b8a] line-clamp-3 mb-2">{item.description}</p>
