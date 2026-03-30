@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import connectToDatabase from '@/lib/mongodb'
 import { GalleryItem } from '@/models/GalleryItem'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     await connectToDatabase()
@@ -29,7 +31,8 @@ export async function DELETE(request: Request) {
     await connectToDatabase()
     await GalleryItem.findByIdAndDelete(id)
     return NextResponse.json({ success: true }, { status: 200 })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Gallery Delete Error:', error)
     return NextResponse.json({ success: false, message: 'Failed to delete item' }, { status: 500 })
   }
 }
