@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { compressData, decompressData, compressToBuffer, decompressFromBuffer } from '@/lib/compression'
 
 export interface IPortfolioItem extends Document {
   title: string
@@ -14,16 +13,14 @@ export interface IPortfolioItem extends Document {
 const PortfolioItemSchema = new Schema(
   {
     title: { type: String, required: true },
-    description: { type: String, required: true, get: decompressData, set: compressData },
+    description: { type: String, required: true },
     category: { type: String, required: true },
     aspect: { type: String, required: true, enum: ['square', 'portrait', 'landscape'] },
     tag: { type: String, required: true },
     tagColor: { type: String, required: true },
     base64Image: { 
-      type: Buffer, 
-      required: true, 
-      get: (v: any) => decompressFromBuffer(v, 'image/jpeg'), 
-      set: compressToBuffer 
+      type: String, 
+      required: true 
     },
   },
   { 

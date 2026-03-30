@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { compressData, decompressData, compressToBuffer, decompressFromBuffer } from '@/lib/compression'
 
 export interface IBook extends Document {
   title: string
@@ -12,19 +11,15 @@ export interface IBook extends Document {
 const BookSchema = new Schema(
   {
     title: { type: String, required: true },
-    description: { type: String, required: true, get: decompressData, set: compressData },
+    description: { type: String, required: true },
     readLink: { type: String, default: '' },
     base64Image: { 
-      type: Buffer, 
-      required: true, 
-      get: (v: any) => decompressFromBuffer(v, 'image/jpeg'), 
-      set: compressToBuffer 
+      type: String, 
+      required: true 
     },
     base64Pdf: { 
-      type: Buffer, 
-      default: '', 
-      get: (v: any) => decompressFromBuffer(v, 'application/pdf'), 
-      set: compressToBuffer 
+      type: String, 
+      default: '' 
     },
   },
   { 

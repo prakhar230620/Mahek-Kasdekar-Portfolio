@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { compressData, decompressData } from '@/lib/compression'
 
 export interface ITimeline extends Document {
   title: string
@@ -11,10 +10,10 @@ export interface ITimeline extends Document {
 
 const TimelineSchema = new Schema(
   {
-    title: { type: String, required: true, get: decompressData, set: compressData },
-    institution: { type: String, required: true, get: decompressData, set: compressData },
+    title: { type: String, required: true },
+    institution: { type: String, required: true },
     period: { type: String, required: true },
-    description: { type: String, required: true, get: decompressData, set: compressData },
+    description: { type: String, required: true },
     icon: { type: String, default: '🎓' },
   },
   { 

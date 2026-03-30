@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { compressToBuffer, decompressFromBuffer } from '@/lib/compression'
 
 export interface IGalleryItem extends Document {
   alt: string
@@ -12,10 +11,8 @@ const GalleryItemSchema = new Schema(
     alt: { type: String, required: true },
     aspect: { type: String, required: true, enum: ['square', 'portrait', 'landscape'] },
     base64Image: { 
-      type: Buffer, 
-      required: true, 
-      get: (v: any) => decompressFromBuffer(v, 'image/jpeg'), 
-      set: compressToBuffer 
+      type: String, 
+      required: true 
     },
   },
   { 
