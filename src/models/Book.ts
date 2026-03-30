@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose'
+import { base64ToBuffer, bufferToBase64 } from '@/lib/imageUtils'
 
 export interface IBook extends Document {
   title: string
@@ -14,12 +15,16 @@ const BookSchema = new Schema(
     description: { type: String, required: true },
     readLink: { type: String, default: '' },
     base64Image: { 
-      type: String, 
-      required: true 
+      type: Buffer, 
+      required: true,
+      get: (v: any) => bufferToBase64(v, 'image/jpeg'),
+      set: base64ToBuffer
     },
     base64Pdf: { 
-      type: String, 
-      default: '' 
+      type: Buffer, 
+      default: '',
+      get: (v: any) => bufferToBase64(v, 'application/pdf'),
+      set: base64ToBuffer
     },
   },
   { 

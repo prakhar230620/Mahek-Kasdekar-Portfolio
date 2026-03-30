@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose'
+import { base64ToBuffer, bufferToBase64 } from '@/lib/imageUtils'
 
 export interface IGalleryItem extends Document {
   alt: string
@@ -11,8 +12,10 @@ const GalleryItemSchema = new Schema(
     alt: { type: String, required: true },
     aspect: { type: String, required: true, enum: ['square', 'portrait', 'landscape'] },
     base64Image: { 
-      type: String, 
-      required: true 
+      type: Buffer, 
+      required: true,
+      get: (v: any) => bufferToBase64(v, 'image/jpeg'),
+      set: base64ToBuffer
     },
   },
   { 

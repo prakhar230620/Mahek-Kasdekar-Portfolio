@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose'
+import { base64ToBuffer, bufferToBase64 } from '@/lib/imageUtils'
 
 export interface IPortfolioItem extends Document {
   title: string
@@ -19,8 +20,10 @@ const PortfolioItemSchema = new Schema(
     tag: { type: String, required: true },
     tagColor: { type: String, required: true },
     base64Image: { 
-      type: String, 
-      required: true 
+      type: Buffer, 
+      required: true,
+      get: (v: any) => bufferToBase64(v, 'image/jpeg'),
+      set: base64ToBuffer
     },
   },
   { 

@@ -8,6 +8,50 @@ import dynamic from 'next/dynamic'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
+/**
+ * Optimizes an image client-side before upload.
+ * Reduces resolution to max 1200px and compresses to JPEG (80% quality).
+ */
+const optimizeImage = (base64Str: string, maxWidth = 1200, maxHeight = 1200): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.src = base64Str
+    img.onload = () => {
+      let width = img.width
+      let height = img.height
+
+      // Calculate new dimensions
+      if (width > height) {
+        if (width > maxWidth) {
+          height *= maxWidth / width
+          width = maxWidth
+        }
+      } else {
+        if (height > maxHeight) {
+          width *= maxHeight / height
+          height = maxHeight
+        }
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(base64Str) // Fallback to original
+        return
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height)
+      
+      // Compress to JPEG with 80% quality
+      const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.8)
+      console.log(`Image Optimized: Original Size Approx ${Math.round(base64Str.length / 1024)}KB -> New Size ${Math.round(optimizedBase64.length / 1024)}KB`)
+      resolve(optimizedBase64)
+    }
+  })
+}
+
 export default function AdminDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'portfolio' | 'gallery' | 'books' | 'timeline' | 'messages'>('portfolio') // Added gallery & timeline
@@ -93,11 +137,12 @@ export default function AdminDashboard() {
     if (!file) return
     const reader = new FileReader()
     reader.readAsDataURL(file)
-    reader.onload = () => {
-      if (type === 'portfolio') setBase64Image(reader.result as string)
-      else if (type === 'gallery') setGalleryBase64(reader.result as string)
-      else if (type === 'book') setBookBase64(reader.result as string)
-      else setBookPdfBase64(reader.result as string)
+    reader.onload = async () => {
+      const optimized = await optimizeImage(reader.result as string)
+      if (type === 'portfolio') setBase64Image(optimized)
+      else if (type === 'gallery') setGalleryBase64(optimized)
+      else if (type === 'book') setBookBase64(optimized)
+      else setBookPdfBase64(optimized)
     }
   }
 
