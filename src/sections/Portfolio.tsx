@@ -12,31 +12,12 @@ const placeholderGradients: Record<string, string> = {
   Certificates: 'linear-gradient(135deg, rgba(255,240,210,0.8), rgba(255,250,220,0.6))',
 }
 
-export default function Portfolio() {
+export default function Portfolio({ initialItems = [] }: { initialItems?: any[] }) {
   const [active, setActive] = useState<FilterCategory>('All')
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchPortfolio = async () => {
-      try {
-        const res = await fetch('/api/admin/portfolio')
-        if (res.ok) {
-          const data = await res.json()
-          setItems(data.items)
-        }
-      } catch (error) {
-        console.error('Failed to fetch portfolio', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchPortfolio()
-  }, [])
 
   const filtered = useMemo(
-    () => (active === 'All' ? items : items.filter((p) => p.category === active)),
-    [active, items]
+    () => (active === 'All' ? initialItems : initialItems.filter((p) => p.category === active)),
+    [active, initialItems]
   )
 
   const aspectRatio: Record<string, string> = {

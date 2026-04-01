@@ -15,26 +15,8 @@ const cardGradients = [
   'linear-gradient(135deg, #d6f5ec 0%, #e8f5ff 100%)',
 ]
 
-export default function Education() {
-  const [timelineItems, setTimelineItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+export default function Education({ initialTimeline = [] }: { initialTimeline?: any[] }) {
 
-  useEffect(() => {
-    const fetchTimeline = async () => {
-      try {
-        const res = await fetch('/api/admin/timeline')
-        if (res.ok) {
-          const data = await res.json()
-          setTimelineItems(data.items)
-        }
-      } catch (err) {
-        console.error('Failed to fetch timeline:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchTimeline()
-  }, [])
 
   return (
     <section id="education" className="py-24 px-6 lg:px-12">
@@ -65,10 +47,8 @@ export default function Education() {
           />
 
           <div className="flex flex-col gap-8">
-            {loading ? (
-              <p className="text-center text-[#6b6b8a] animate-pulse">Loading timeline...</p>
-            ) : timelineItems.length > 0 ? (
-              timelineItems.map((item, i) => {
+            {initialTimeline.length > 0 ? (
+              initialTimeline.map((item, i) => {
                 const icon = item.icon || '🎓'
                 return (
                   <motion.div

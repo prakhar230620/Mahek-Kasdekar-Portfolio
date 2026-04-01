@@ -4,9 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { BookOpen, ExternalLink, X } from 'lucide-react'
 import FlipBookReader from '@/components/FlipBookReader'
 
-export default function Books() {
-  const [books, setBooks] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+export default function Books({ initialBooks = [] }: { initialBooks?: any[] }) {
   const [activePdf, setActivePdf] = useState<string | null>(null)
   const [activeTitle, setActiveTitle] = useState<string>('')
 
@@ -17,27 +15,6 @@ export default function Books() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
-
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const res = await fetch('/api/admin/books')
-        if (res.ok) {
-          const data = await res.json()
-          setBooks(data.items)
-        }
-      } catch (error) {
-        console.error('Failed to fetch books', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchBooks()
-  }, [])
-
-  if (loading) {
-    return null // Hide section while loading
-  }
 
   return (
     <section id="books" className="py-24 px-6 lg:px-12 relative overflow-hidden">
@@ -64,13 +41,13 @@ export default function Books() {
 
         {/* Books Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {books.length === 0 ? (
+          {initialBooks.length === 0 ? (
             <div className="col-span-full py-12 text-center decoration-dashed text-[#6b6b8a]/60 font-medium">
               Books are currently being written/curated. Check back soon!
             </div>
           ) : (
             <AnimatePresence>
-              {books.map((book, i) => (
+              {initialBooks.map((book, i) => (
                 <motion.div
                   key={book._id}
                   initial={{ opacity: 0, y: 30 }}

@@ -22,30 +22,11 @@ const aspectH: Record<string, string> = {
   landscape: 'h-32',
 }
 
-export default function Gallery() {
+export default function Gallery({ initialItems = [] }: { initialItems?: any[] }) {
   const carouselRef = useRef<HTMLDivElement>(null)
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchGallery = async () => {
-      try {
-        const res = await fetch('/api/admin/gallery')
-        if (res.ok) {
-          const data = await res.json()
-          setItems(data.items)
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchGallery()
-  }, [])
 
   // Duplicate items for infinite loop
-  const carouselItems = items.length > 0 ? [...items, ...items] : []
+  const carouselItems = initialItems.length > 0 ? [...initialItems, ...initialItems] : []
 
   return (
     <section id="gallery" className="py-24">
@@ -103,7 +84,7 @@ export default function Gallery() {
           transition={{ duration: 0.7 }}
           className="grid grid-cols-2 lg:grid-cols-3 gap-4"
         >
-          {items.slice(0, 5).map((item, idx) => (
+          {initialItems.slice(0, 5).map((item, idx) => (
             <motion.div
               key={item._id}
               whileHover={{ scale: 1.02 }}
@@ -120,7 +101,7 @@ export default function Gallery() {
               </div>
             </motion.div>
           ))}
-          {items.length === 0 && <p className="col-span-3 text-center text-[#6b6b8a] opacity-50 italic">No images in gallery yet.</p>}
+          {initialItems.length === 0 && <p className="col-span-3 text-center text-[#6b6b8a] opacity-50 italic">No images in gallery yet.</p>}
         </motion.div>
       </div>
     </section>
