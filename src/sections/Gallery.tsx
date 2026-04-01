@@ -83,7 +83,7 @@ export default function Gallery() {
             >
               <div
                 className="w-full h-full flex items-end p-3 bg-cover bg-center"
-                style={item.base64Image ? { backgroundImage: `url('${item.base64Image}')` } : { background: gradients[i % gradients.length] }}
+                style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: gradients[i % gradients.length] }}
               >
                 <p className="text-xs text-[#6b6b8a] font-medium leading-tight opacity-70 bg-white/40 backdrop-blur-sm p-1 rounded">
                   {item.alt}
@@ -112,7 +112,7 @@ export default function Gallery() {
             >
               <div
                 className="w-full h-full flex items-end p-5 bg-cover bg-center"
-                style={item.base64Image ? { backgroundImage: `url('${item.base64Image}')` } : { background: gradients[idx % gradients.length] }}
+                style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: gradients[idx % gradients.length] }}
               >
                 <p className="font-display italic text-lg text-[#6b6b8a] opacity-70 bg-white/40 backdrop-blur-sm px-2 rounded">
                   {item.alt}

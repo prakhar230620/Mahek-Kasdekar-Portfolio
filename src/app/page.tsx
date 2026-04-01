@@ -1,6 +1,4 @@
 import Navbar from '@/components/Navbar'
-
-export const dynamic = 'force-dynamic'
 import CustomCursor from '@/components/CustomCursor'
 import BackToTop from '@/components/BackToTop'
 import AnimatedBackground from '@/components/AnimatedBackground'

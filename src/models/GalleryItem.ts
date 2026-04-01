@@ -1,27 +1,21 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { base64ToBuffer, bufferToBase64 } from '@/lib/imageUtils'
 
 export interface IGalleryItem extends Document {
   alt: string
   aspect: string
-  base64Image: any
+  base64Image: string
 }
 
 const GalleryItemSchema = new Schema(
   {
     alt: { type: String, required: true },
     aspect: { type: String, required: true, enum: ['square', 'portrait', 'landscape'] },
-    base64Image: { 
-      type: Buffer, 
-      required: true,
-      get: (v: any) => bufferToBase64(v, 'image/jpeg'),
-      set: base64ToBuffer
-    },
+    // base64Image stored as String ("gz:<base64>" or plain "data:..." for legacy)
+    // Compression/decompression handled at the API route level
+    base64Image: { type: String, default: '' },
   },
-  { 
+  {
     timestamps: true,
-    toJSON: { getters: true },
-    toObject: { getters: true }
   }
 )
 

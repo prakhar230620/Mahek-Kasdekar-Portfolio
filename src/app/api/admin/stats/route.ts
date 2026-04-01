@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import connectToDatabase from '@/lib/mongodb'
 import { PortfolioItem } from '@/models/PortfolioItem'
-
-export const dynamic = 'force-dynamic'
 import { GalleryItem } from '@/models/GalleryItem'
 import { Message } from '@/models/Message'
 import { Book } from '@/models/Book'

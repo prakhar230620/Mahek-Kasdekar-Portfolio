@@ -109,7 +109,7 @@ export default function Portfolio() {
           <AnimatePresence mode="popLayout">
             {filtered.map((item, i) => (
               <motion.div
-                key={item._id}
+                key={item.id}
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -125,7 +125,7 @@ export default function Portfolio() {
                   {/* Image placeholder or Base64 Image */}
                   <div
                     className={`w-full ${aspectRatio[item.aspect]} relative bg-cover bg-center`}
-                    style={item.base64Image ? { backgroundImage: `url('${item.base64Image}')` } : { background: placeholderGradients[item.category] }}
+                    style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: placeholderGradients[item.category] }}
                   >
                     {!item.base64Image && (
                       <div className="absolute inset-0 flex items-center justify-center opacity-20">

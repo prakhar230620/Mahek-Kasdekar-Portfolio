@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server'
 import connectToDatabase from '@/lib/mongodb'
 import { Message } from '@/models/Message'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET() {
   try {
     await connectToDatabase()
