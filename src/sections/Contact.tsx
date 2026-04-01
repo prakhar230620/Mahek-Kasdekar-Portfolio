@@ -10,14 +10,14 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('submitting')
-    
+
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
-      
+
       if (res.ok) {
         setStatus('success')
         setFormData({ name: '', email: '', subject: '', message: '' })
@@ -175,26 +175,26 @@ export default function Contact() {
               <h4 className="font-display italic font-semibold text-xl text-[#1a1a2e] mb-6">Find me elsewhere</h4>
               <div className="flex items-center gap-4">
                 {[
-                  { 
-                    icon: Instagram, 
-                    color: 'text-[#E1306C]', 
-                    bg: 'hover:bg-[#E1306C]/10', 
+                  {
+                    icon: Instagram,
+                    color: 'text-[#E1306C]',
+                    bg: 'hover:bg-[#E1306C]/10',
                     label: 'Instagram',
-                    href: 'https://www.instagram.com/mahek__k0911?igsh=MWFkMmplbnYxY2tjeQ==' 
+                    href: 'https://www.instagram.com/mahek__k0911?igsh=MWFkMmplbnYxY2tjeQ=='
                   },
-                  { 
-                    icon: Linkedin, 
-                    color: 'text-[#0077b5]', 
-                    bg: 'hover:bg-[#0077b5]/10', 
+                  {
+                    icon: Linkedin,
+                    color: 'text-[#0077b5]',
+                    bg: 'hover:bg-[#0077b5]/10',
                     label: 'LinkedIn',
-                    href: 'https://linkedin.com/in/mahek-kasdekar' 
+                    href: '#'
                   },
-                  { 
-                    icon: Globe, 
-                    color: 'text-[#1769ff]', 
-                    bg: 'hover:bg-[#1769ff]/10', 
+                  {
+                    icon: Globe,
+                    color: 'text-[#1769ff]',
+                    bg: 'hover:bg-[#1769ff]/10',
                     label: 'Portfolio',
-                    href: 'https://behance.net/mahek' 
+                    href: '#'
                   },
                 ].map((social, i) => (
                   <motion.a
