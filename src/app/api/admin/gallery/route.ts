@@ -6,12 +6,10 @@ import { compressDataUri, decompressDataUri } from '@/lib/compression'
 export async function GET() {
   try {
     await connectToDatabase()
-    // Use .lean() to get plain JS objects, avoiding Mongoose document overhead
     const raw = await GalleryItem.find({}).sort({ createdAt: -1 }).lean()
 
     const items = raw.map((item: any) => ({
       ...item,
-      // Decompress binary field back to data URI for the frontend
       base64Image: decompressDataUri(item.base64Image),
     }))
 
@@ -27,7 +25,6 @@ export async function POST(request: Request) {
     const data = await request.json()
     await connectToDatabase()
 
-    // Compress binary fields before storing
     const itemData = {
       ...data,
       base64Image: data.base64Image ? compressDataUri(data.base64Image) : '',
@@ -41,11 +38,34 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json()
+    await connectToDatabase()
+    const { id, base64Image, ...rest } = data
+
+    const updateData: any = { ...rest }
+    if (base64Image && base64Image.startsWith('data:')) {
+      updateData.base64Image = compressDataUri(base64Image)
+    }
+
+    const updated = await GalleryItem.findByIdAndUpdate(id, updateData, { new: true })
+    return NextResponse.json({ success: true, item: updated }, { status: 200 })
+  } catch (error) {
+    console.error('PUT /api/admin/gallery error:', error)
+    return NextResponse.json({ success: false, message: 'Failed to update item' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json()
+    const body = await request.json()
     await connectToDatabase()
-    await GalleryItem.findByIdAndDelete(id)
+    if (body.ids && Array.isArray(body.ids)) {
+      await GalleryItem.deleteMany({ _id: { $in: body.ids } })
+    } else {
+      await GalleryItem.findByIdAndDelete(body.id)
+    }
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
     console.error('DELETE /api/admin/gallery error:', error)

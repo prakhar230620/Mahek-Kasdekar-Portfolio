@@ -29,7 +29,7 @@ export default async function Home() {
   const rawBooks = await Book.find({}).sort({ createdAt: -1 }).lean()
   const rawPortfolio = await PortfolioItem.find({}).sort({ createdAt: -1 }).lean()
   const rawGallery = await GalleryItem.find({}).sort({ createdAt: -1 }).lean()
-  const rawTimeline = await Timeline.find({}).sort({ createdAt: -1 })
+  const rawTimeline = await Timeline.find({}).sort({ order: 1, createdAt: -1 })
 
   // Serialize to plain JS objects, decompressing as needed
   const booksData = rawBooks.map((item: any) => ({

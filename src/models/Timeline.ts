@@ -7,6 +7,7 @@ export interface ITimeline extends Document {
   period: string
   description: string
   icon: string
+  order: number
 }
 
 const TimelineSchema = new Schema(
@@ -16,6 +17,7 @@ const TimelineSchema = new Schema(
     period: { type: String, required: true },
     description: { type: String, required: true, get: decompressData, set: compressData },
     icon: { type: String, default: '🎓' },
+    order: { type: Number, default: 0 },
   },
   { 
     timestamps: true,

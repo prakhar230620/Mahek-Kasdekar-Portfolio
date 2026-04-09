@@ -6,12 +6,10 @@ import { compressDataUri, decompressDataUri, decompressData } from '@/lib/compre
 export async function GET() {
   try {
     await connectToDatabase()
-    // Use .lean() to get plain JS objects, avoiding Mongoose document overhead
     const raw = await PortfolioItem.find({}).sort({ createdAt: -1 }).lean()
 
     const items = raw.map((item: any) => ({
       ...item,
-      // .lean() skips Mongoose getters, so we decompress all fields manually:
       description: decompressData(item.description),
       base64Image: decompressDataUri(item.base64Image),
     }))
@@ -28,7 +26,6 @@ export async function POST(request: Request) {
     const data = await request.json()
     await connectToDatabase()
 
-    // Compress binary fields before storing
     const itemData = {
       ...data,
       base64Image: data.base64Image ? compressDataUri(data.base64Image) : '',
@@ -42,11 +39,34 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json()
+    await connectToDatabase()
+    const { id, base64Image, ...rest } = data
+
+    const updateData: any = { ...rest }
+    if (base64Image && base64Image.startsWith('data:')) {
+      updateData.base64Image = compressDataUri(base64Image)
+    }
+
+    const updated = await PortfolioItem.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+    return NextResponse.json({ success: true, item: updated }, { status: 200 })
+  } catch (error) {
+    console.error('PUT /api/admin/portfolio error:', error)
+    return NextResponse.json({ success: false, message: 'Failed to update item' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json()
+    const body = await request.json()
     await connectToDatabase()
-    await PortfolioItem.findByIdAndDelete(id)
+    if (body.ids && Array.isArray(body.ids)) {
+      await PortfolioItem.deleteMany({ _id: { $in: body.ids } })
+    } else {
+      await PortfolioItem.findByIdAndDelete(body.id)
+    }
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
     console.error('DELETE /api/admin/portfolio error:', error)
