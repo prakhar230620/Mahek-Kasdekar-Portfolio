@@ -23,8 +23,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let data: any
+  try { data = await request.json() }
+  catch { return NextResponse.json({ success: false, message: 'Request body too large or malformed. Please reduce image/PDF size.' }, { status: 413 }) }
   try {
-    const data = await request.json()
     await connectToDatabase()
 
     const bookData = {
@@ -42,8 +44,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  let data: any
+  try { data = await request.json() }
+  catch { return NextResponse.json({ success: false, message: 'Request body too large or malformed. Please reduce image/PDF size.' }, { status: 413 }) }
   try {
-    const data = await request.json()
     await connectToDatabase()
     const { id, base64Image, base64Pdf, ...rest } = data
 

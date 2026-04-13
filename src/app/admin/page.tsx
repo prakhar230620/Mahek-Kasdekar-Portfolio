@@ -19,6 +19,56 @@ const emptyGalleryForm = { alt: '', aspect: 'square' }
 const emptyBookForm = { title: '', description: '', readLink: '' }
 const emptyTimelineForm = { title: '', institution: '', period: '', description: '', icon: '🎓' }
 
+// ─── Client-Side Image Compression ──────────────────────────────────────────
+// Vercel Serverless Functions have a hard 4.5MB request body limit.
+// Raw base64 images easily exceed this, so we compress/resize them in the
+// browser BEFORE the fetch call so the payload is always well under the limit.
+const MAX_IMAGE_SIDE = 1200   // max px on longest side
+const MAX_PDF_MB     = 3.5    // hard gate: PDFs can't be canvas-compressed
+
+function compressImageClientSide(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.onload = () => {
+      const img = new Image()
+      img.src = reader.result as string
+      img.onerror = () => reject(new Error('Failed to load image'))
+      img.onload = () => {
+        let { width, height } = img
+        // Downscale if needed
+        if (width > MAX_IMAGE_SIDE || height > MAX_IMAGE_SIDE) {
+          if (width >= height) { height = Math.round(height * MAX_IMAGE_SIDE / width); width = MAX_IMAGE_SIDE }
+          else                 { width  = Math.round(width  * MAX_IMAGE_SIDE / height); height = MAX_IMAGE_SIDE }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width  = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { reject(new Error('Canvas not supported')); return }
+        ctx.drawImage(img, 0, 0, width, height)
+
+        // Encode as JPEG at 85% quality (~5-10× smaller than raw base64)
+        let result = canvas.toDataURL('image/jpeg', 0.85)
+        // Still too large? Drop quality further
+        if (result.length > 2 * 1024 * 1024)
+          result = canvas.toDataURL('image/jpeg', 0.70)
+        // Last resort: also halve the dimensions
+        if (result.length > 2 * 1024 * 1024) {
+          const c2 = document.createElement('canvas')
+          c2.width  = Math.round(width  * 0.65)
+          c2.height = Math.round(height * 0.65)
+          const ctx2 = c2.getContext('2d')!
+          ctx2.drawImage(img, 0, 0, c2.width, c2.height)
+          result = c2.toDataURL('image/jpeg', 0.70)
+        }
+        resolve(result)
+      }
+    }
+  })
+}
+
 export default function AdminDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('portfolio')
@@ -52,6 +102,7 @@ export default function AdminDashboard() {
   const [bookBase64, setBookBase64] = useState<string>('')
   const [bookPdfBase64, setBookPdfBase64] = useState<string>('')
   const [uploading, setUploading] = useState(false)
+  const [compressing, setCompressing] = useState(false)
 
   // ── Bulk Selection (plain arrays — simpler React re-render tracking) ─────────
   const [selectedPortfolio, setSelectedPortfolio] = useState<string[]>([])
@@ -84,17 +135,36 @@ export default function AdminDashboard() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // ─── File → Base64 ─────────────────────────────────────────────────────────
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'portfolio' | 'gallery' | 'book' | 'bookPdf') => {
+  // ─── File → Base64 (images compressed client-side before upload) ─────────────
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'portfolio' | 'gallery' | 'book' | 'bookPdf') => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      if (type === 'portfolio') setBase64Image(reader.result as string)
-      else if (type === 'gallery') setGalleryBase64(reader.result as string)
-      else if (type === 'book') setBookBase64(reader.result as string)
-      else setBookPdfBase64(reader.result as string)
+
+    // ── PDF: validate size only (can't canvas-compress) ──
+    if (type === 'bookPdf') {
+      const sizeMB = file.size / (1024 * 1024)
+      if (sizeMB > MAX_PDF_MB) {
+        alert(`PDF is too large (${sizeMB.toFixed(1)} MB).\nMaximum allowed is ${MAX_PDF_MB} MB.\nPlease compress the PDF before uploading.`)
+        e.target.value = ''
+        return
+      }
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => setBookPdfBase64(reader.result as string)
+      return
+    }
+
+    // ── Image: compress client-side to stay under Vercel's 4.5 MB body limit ──
+    setCompressing(true)
+    try {
+      const compressed = await compressImageClientSide(file)
+      if (type === 'portfolio')  setBase64Image(compressed)
+      else if (type === 'gallery') setGalleryBase64(compressed)
+      else if (type === 'book')    setBookBase64(compressed)
+    } catch {
+      alert('Failed to process image. Please try a different file.')
+    } finally {
+      setCompressing(false)
     }
   }
 
@@ -140,8 +210,13 @@ export default function AdminDashboard() {
       const method = formMode === 'add' ? 'POST' : 'PUT'
       const body = formMode === 'add' ? { ...formData, base64Image } : { id: editingId, ...formData, ...(base64Image ? { base64Image } : {}) }
       const res = await fetch('/api/admin/portfolio', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() } else alert('Failed to save item')
-    } catch { alert('Network error') } finally { setUploading(false) }
+      if (res.ok) { closeAllForms(); fetchData() }
+      else {
+        const err = await res.json().catch(() => ({}))
+        if (res.status === 413) alert('Upload failed: image is still too large even after compression. Try a smaller/simpler image.')
+        else alert(`Failed to save item: ${err.message || res.statusText}`)
+      }
+    } catch { alert('Network error. Check your connection and try again.') } finally { setUploading(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -170,8 +245,13 @@ export default function AdminDashboard() {
       const method = formMode === 'add' ? 'POST' : 'PUT'
       const body = formMode === 'add' ? { ...galleryData, base64Image: galleryBase64 } : { id: editingId, ...galleryData, ...(galleryBase64 ? { base64Image: galleryBase64 } : {}) }
       const res = await fetch('/api/admin/gallery', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() } else alert('Failed to save gallery item')
-    } catch { alert('Network error') } finally { setUploading(false) }
+      if (res.ok) { closeAllForms(); fetchData() }
+      else {
+        const err = await res.json().catch(() => ({}))
+        if (res.status === 413) alert('Upload failed: image is still too large even after compression. Try a smaller/simpler image.')
+        else alert(`Failed to save gallery item: ${err.message || res.statusText}`)
+      }
+    } catch { alert('Network error. Check your connection and try again.') } finally { setUploading(false) }
   }
 
   const handleDeleteGallery = async (id: string) => {
@@ -202,8 +282,13 @@ export default function AdminDashboard() {
         ? { ...bookData, base64Image: bookBase64, base64Pdf: bookPdfBase64 }
         : { id: editingId, ...bookData, ...(bookBase64 ? { base64Image: bookBase64 } : {}), ...(bookPdfBase64 ? { base64Pdf: bookPdfBase64 } : {}) }
       const res = await fetch('/api/admin/books', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() } else alert('Failed to save book')
-    } catch { alert('Network error') } finally { setUploading(false) }
+      if (res.ok) { closeAllForms(); fetchData() }
+      else {
+        const err = await res.json().catch(() => ({}))
+        if (res.status === 413) alert(`Upload failed: total payload too large.\nTip: Cover image is auto-compressed, but PDF must be under ${MAX_PDF_MB} MB.`)
+        else alert(`Failed to save book: ${err.message || res.statusText}`)
+      }
+    } catch { alert('Network error. Check your connection and try again.') } finally { setUploading(false) }
   }
 
   const handleDeleteBook = async (id: string) => {
@@ -231,8 +316,12 @@ export default function AdminDashboard() {
       const method = formMode === 'add' ? 'POST' : 'PUT'
       const body = formMode === 'add' ? timelineData : { id: editingId, ...timelineData }
       const res = await fetch('/api/admin/timeline', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() } else alert('Failed to save entry')
-    } catch { alert('Network error') } finally { setUploading(false) }
+      if (res.ok) { closeAllForms(); fetchData() }
+      else {
+        const err = await res.json().catch(() => ({}))
+        alert(`Failed to save entry: ${err.message || res.statusText}`)
+      }
+    } catch { alert('Network error. Check your connection and try again.') } finally { setUploading(false) }
   }
 
   const handleDeleteTimeline = async (id: string) => {
@@ -392,8 +481,8 @@ export default function AdminDashboard() {
                           {base64Image && <span className="text-xs text-green-600">Image Loaded ✓</span>}
                         </div>
                       </div>
-                      <button disabled={uploading} type="submit" className="clay mt-2 flex items-center justify-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-[#1a1a2e] disabled:opacity-50">
-                        <Check size={16} /> {uploading ? 'Saving...' : formMode === 'add' ? 'Save Item' : 'Update Item'}
+                      <button disabled={uploading || compressing} type="submit" className="clay mt-2 flex items-center justify-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-[#1a1a2e] disabled:opacity-50">
+                        <Check size={16} /> {compressing ? 'Compressing image…' : uploading ? 'Saving...' : formMode === 'add' ? 'Save Item' : 'Update Item'}
                       </button>
                     </motion.form>
                   )}
@@ -481,8 +570,8 @@ export default function AdminDashboard() {
                           {galleryBase64 && <span className="text-xs text-green-600">Image Loaded ✓</span>}
                         </div>
                       </div>
-                      <button disabled={uploading} type="submit" className="clay mt-2 flex items-center justify-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-[#1a1a2e] disabled:opacity-50">
-                        <Check size={16} /> {uploading ? 'Processing...' : formMode === 'add' ? 'Add to Gallery' : 'Update Image'}
+                      <button disabled={uploading || compressing} type="submit" className="clay mt-2 flex items-center justify-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-[#1a1a2e] disabled:opacity-50">
+                        <Check size={16} /> {compressing ? 'Compressing image…' : uploading ? 'Processing...' : formMode === 'add' ? 'Add to Gallery' : 'Update Image'}
                       </button>
                     </motion.form>
                   )}
@@ -568,8 +657,8 @@ export default function AdminDashboard() {
                           {bookPdfBase64 && <span className="text-xs text-green-600">PDF ✓</span>}
                         </div>
                       </div>
-                      <button disabled={uploading} type="submit" className="clay mt-2 flex items-center justify-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-[#1a1a2e] disabled:opacity-50">
-                        <Check size={16} /> {uploading ? 'Processing...' : formMode === 'add' ? 'Add Book' : 'Update Book'}
+                      <button disabled={uploading || compressing} type="submit" className="clay mt-2 flex items-center justify-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-[#1a1a2e] disabled:opacity-50">
+                        <Check size={16} /> {compressing ? 'Compressing cover…' : uploading ? 'Processing...' : formMode === 'add' ? 'Add Book' : 'Update Book'}
                       </button>
                     </motion.form>
                   )}
