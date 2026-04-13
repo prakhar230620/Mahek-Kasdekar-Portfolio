@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { personalityTraits } from '@/lib/portfolioData'
-import { profileImage } from '@/lib/profileImage'
+import { profileImage as defaultProfileImage } from '@/lib/profileImage'
 
 const traitColors = [
   'linear-gradient(135deg, #ffe8ee, #f3e8ff)',
@@ -11,7 +11,7 @@ const traitColors = [
   'linear-gradient(135deg, #fff7e8, #ffe8ee)',
 ]
 
-export default function About() {
+export default function About({ profileImage = defaultProfileImage }: { profileImage?: string }) {
   return (
     <section id="about" className="py-24 px-6 lg:px-12">
       <div className="mx-auto max-w-7xl">

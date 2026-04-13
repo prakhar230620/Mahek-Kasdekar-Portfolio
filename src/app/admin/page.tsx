@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LogOut, Image as ImageIcon, MessageSquare, Trash2, Plus, Upload,
-  BookOpen, Trophy, Edit2, X, Check, ChevronUp, ChevronDown, CheckSquare, Square
+  BookOpen, Trophy, Edit2, X, Check, ChevronUp, ChevronDown, CheckSquare, Square,
+  User
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -12,7 +13,7 @@ import dynamic from 'next/dynamic'
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-type Tab = 'portfolio' | 'gallery' | 'books' | 'timeline' | 'messages'
+type Tab = 'portfolio' | 'gallery' | 'books' | 'timeline' | 'messages' | 'about'
 
 const emptyPortfolioForm = { title: '', description: '', category: 'Photography', aspect: 'landscape', tag: '', tagColor: 'bg-[#fde8d6] text-[#9b5a2a]' }
 const emptyGalleryForm = { alt: '', aspect: 'square' }
@@ -80,6 +81,7 @@ export default function AdminDashboard() {
   const [timeline, setTimeline] = useState<any[]>([])
   const [messages, setMessages] = useState<any[]>([])
   const [stats, setStats] = useState({ portfolio: 0, gallery: 0, messages: 0, books: 0, timeline: 0 })
+  const [aboutImage, setAboutImage] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
   // ── Add / Edit Form State ──────────────────────────────────────────────────
@@ -101,6 +103,7 @@ export default function AdminDashboard() {
   const [galleryBase64, setGalleryBase64] = useState<string>('')
   const [bookBase64, setBookBase64] = useState<string>('')
   const [bookPdfBase64, setBookPdfBase64] = useState<string>('')
+  const [aboutBase64, setAboutBase64] = useState<string>('')
   const [uploading, setUploading] = useState(false)
   const [compressing, setCompressing] = useState(false)
 
@@ -112,16 +115,17 @@ export default function AdminDashboard() {
   const [selectedMessages, setSelectedMessages] = useState<string[]>([])
 
   // ─── Fetch Data ─────────────────────────────────────────────────────────────
-  const fetchData = useCallback(async () => {
-    setLoading(true)
+  const fetchData = useCallback(async (background = false) => {
+    if (!background) setLoading(true)
     try {
-      const [pRes, gRes, bRes, tRes, mRes, sRes] = await Promise.all([
+      const [pRes, gRes, bRes, tRes, mRes, sRes, setRes] = await Promise.all([
         fetch('/api/admin/portfolio'),
         fetch('/api/admin/gallery'),
         fetch('/api/admin/books'),
         fetch('/api/admin/timeline'),
         fetch('/api/admin/messages'),
         fetch('/api/admin/stats'),
+        fetch('/api/admin/settings?key=aboutProfileImage'),
       ])
       if (pRes.ok) setPortfolio((await pRes.json()).items)
       if (gRes.ok) setGallery((await gRes.json()).items)
@@ -129,14 +133,15 @@ export default function AdminDashboard() {
       if (tRes.ok) setTimeline((await tRes.json()).items)
       if (mRes.ok) setMessages((await mRes.json()).messages)
       if (sRes.ok) setStats((await sRes.json()).data)
+      if (setRes.ok) setAboutImage((await setRes.json()).value)
     } catch (err) { console.error(err) }
-    finally { setLoading(false) }
+    finally { if (!background) setLoading(false) }
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 
   // ─── File → Base64 (images compressed client-side before upload) ─────────────
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'portfolio' | 'gallery' | 'book' | 'bookPdf') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'portfolio' | 'gallery' | 'book' | 'bookPdf' | 'about') => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -161,6 +166,7 @@ export default function AdminDashboard() {
       if (type === 'portfolio')  setBase64Image(compressed)
       else if (type === 'gallery') setGalleryBase64(compressed)
       else if (type === 'book')    setBookBase64(compressed)
+      else if (type === 'about')   setAboutBase64(compressed)
     } catch {
       alert('Failed to process image. Please try a different file.')
     } finally {
@@ -210,7 +216,15 @@ export default function AdminDashboard() {
       const method = formMode === 'add' ? 'POST' : 'PUT'
       const body = formMode === 'add' ? { ...formData, base64Image } : { id: editingId, ...formData, ...(base64Image ? { base64Image } : {}) }
       const res = await fetch('/api/admin/portfolio', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() }
+      if (res.ok) { 
+        const { item } = await res.json()
+        if (formMode === 'add') {
+          setPortfolio(prev => [{ ...item, ...formData, base64Image }, ...prev])
+        } else {
+          setPortfolio(prev => prev.map(p => p._id === item._id ? { ...p, ...item, ...formData, base64Image: base64Image || p.base64Image } : p))
+        }
+        closeAllForms()
+      }
       else {
         const err = await res.json().catch(() => ({}))
         if (res.status === 413) alert('Upload failed: image is still too large even after compression. Try a smaller/simpler image.')
@@ -221,15 +235,18 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this portfolio item?')) return
-    await fetch('/api/admin/portfolio', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    fetchData()
+    const res = await fetch('/api/admin/portfolio', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (res.ok) setPortfolio(prev => prev.filter(p => p._id !== id))
   }
 
   const handleBulkDeletePortfolio = async () => {
     if (selectedPortfolio.length === 0) return
     if (!confirm(`Delete ${selectedPortfolio.length} selected item(s)?`)) return
-    await fetch('/api/admin/portfolio', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedPortfolio }) })
-    setSelectedPortfolio([]); fetchData()
+    const res = await fetch('/api/admin/portfolio', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedPortfolio }) })
+    if (res.ok) {
+      setPortfolio(prev => prev.filter(p => !selectedPortfolio.includes(p._id)))
+      setSelectedPortfolio([])
+    }
   }
 
   const toggleSelectPortfolio = (id: string) => {
@@ -245,7 +262,15 @@ export default function AdminDashboard() {
       const method = formMode === 'add' ? 'POST' : 'PUT'
       const body = formMode === 'add' ? { ...galleryData, base64Image: galleryBase64 } : { id: editingId, ...galleryData, ...(galleryBase64 ? { base64Image: galleryBase64 } : {}) }
       const res = await fetch('/api/admin/gallery', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() }
+      if (res.ok) { 
+        const { item } = await res.json()
+        if (formMode === 'add') {
+          setGallery(prev => [{ ...item, ...galleryData, base64Image: galleryBase64 }, ...prev])
+        } else {
+          setGallery(prev => prev.map(g => g._id === item._id ? { ...g, ...item, ...galleryData, base64Image: galleryBase64 || g.base64Image } : g))
+        }
+        closeAllForms() 
+      }
       else {
         const err = await res.json().catch(() => ({}))
         if (res.status === 413) alert('Upload failed: image is still too large even after compression. Try a smaller/simpler image.')
@@ -256,15 +281,18 @@ export default function AdminDashboard() {
 
   const handleDeleteGallery = async (id: string) => {
     if (!confirm('Delete this gallery image?')) return
-    await fetch('/api/admin/gallery', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    fetchData()
+    const res = await fetch('/api/admin/gallery', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (res.ok) setGallery(prev => prev.filter(g => g._id !== id))
   }
 
   const handleBulkDeleteGallery = async () => {
     if (selectedGallery.length === 0) return
     if (!confirm(`Delete ${selectedGallery.length} selected image(s)?`)) return
-    await fetch('/api/admin/gallery', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedGallery }) })
-    setSelectedGallery([]); fetchData()
+    const res = await fetch('/api/admin/gallery', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedGallery }) })
+    if (res.ok) {
+      setGallery(prev => prev.filter(g => !selectedGallery.includes(g._id)))
+      setSelectedGallery([])
+    }
   }
 
   const toggleSelectGallery = (id: string) => {
@@ -282,7 +310,15 @@ export default function AdminDashboard() {
         ? { ...bookData, base64Image: bookBase64, base64Pdf: bookPdfBase64 }
         : { id: editingId, ...bookData, ...(bookBase64 ? { base64Image: bookBase64 } : {}), ...(bookPdfBase64 ? { base64Pdf: bookPdfBase64 } : {}) }
       const res = await fetch('/api/admin/books', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() }
+      if (res.ok) { 
+        const { item } = await res.json()
+        if (formMode === 'add') {
+          setBooks(prev => [{ ...item, ...bookData, base64Image: bookBase64, base64Pdf: bookPdfBase64 }, ...prev])
+        } else {
+          setBooks(prev => prev.map(b => b._id === item._id ? { ...b, ...item, ...bookData, base64Image: bookBase64 || b.base64Image, base64Pdf: bookPdfBase64 || b.base64Pdf } : b))
+        }
+        closeAllForms() 
+      }
       else {
         const err = await res.json().catch(() => ({}))
         if (res.status === 413) alert(`Upload failed: total payload too large.\nTip: Cover image is auto-compressed, but PDF must be under ${MAX_PDF_MB} MB.`)
@@ -293,15 +329,18 @@ export default function AdminDashboard() {
 
   const handleDeleteBook = async (id: string) => {
     if (!confirm('Delete this book?')) return
-    await fetch('/api/admin/books', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    fetchData()
+    const res = await fetch('/api/admin/books', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (res.ok) setBooks(prev => prev.filter(b => b._id !== id))
   }
 
   const handleBulkDeleteBooks = async () => {
     if (selectedBooks.length === 0) return
     if (!confirm(`Delete ${selectedBooks.length} selected book(s)?`)) return
-    await fetch('/api/admin/books', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedBooks }) })
-    setSelectedBooks([]); fetchData()
+    const res = await fetch('/api/admin/books', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedBooks }) })
+    if (res.ok) {
+      setBooks(prev => prev.filter(b => !selectedBooks.includes(b._id)))
+      setSelectedBooks([])
+    }
   }
 
   const toggleSelectBook = (id: string) => {
@@ -316,7 +355,15 @@ export default function AdminDashboard() {
       const method = formMode === 'add' ? 'POST' : 'PUT'
       const body = formMode === 'add' ? timelineData : { id: editingId, ...timelineData }
       const res = await fetch('/api/admin/timeline', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { closeAllForms(); fetchData() }
+      if (res.ok) { 
+        const { item } = await res.json()
+        if (formMode === 'add') {
+          setTimeline(prev => [...prev, { ...item, ...timelineData }]) // Appending at the end to match order? Or sort later?
+        } else {
+          setTimeline(prev => prev.map(t => t._id === item._id ? { ...t, ...item, ...timelineData } : t))
+        }
+        closeAllForms() 
+      }
       else {
         const err = await res.json().catch(() => ({}))
         alert(`Failed to save entry: ${err.message || res.statusText}`)
@@ -326,15 +373,18 @@ export default function AdminDashboard() {
 
   const handleDeleteTimeline = async (id: string) => {
     if (!confirm('Delete this achievement entry?')) return
-    await fetch('/api/admin/timeline', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    fetchData()
+    const res = await fetch('/api/admin/timeline', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (res.ok) setTimeline(prev => prev.filter(t => t._id !== id))
   }
 
   const handleBulkDeleteTimeline = async () => {
     if (selectedTimeline.length === 0) return
     if (!confirm(`Delete ${selectedTimeline.length} selected entry(s)?`)) return
-    await fetch('/api/admin/timeline', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedTimeline }) })
-    setSelectedTimeline([]); fetchData()
+    const res = await fetch('/api/admin/timeline', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: selectedTimeline }) })
+    if (res.ok) {
+      setTimeline(prev => prev.filter(t => !selectedTimeline.includes(t._id)))
+      setSelectedTimeline([])
+    }
   }
 
   const toggleSelectTimeline = (id: string) => {
@@ -357,8 +407,8 @@ export default function AdminDashboard() {
   // ─── Messages ──────────────────────────────────────────────────────────────
   const handleDeleteMessage = async (id: string) => {
     if (!confirm('Delete this message?')) return
-    await fetch('/api/admin/messages', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    fetchData()
+    const res = await fetch('/api/admin/messages', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (res.ok) setMessages(prev => prev.filter(m => m._id !== id))
   }
 
   const handleBulkDeleteMessages = async () => {
@@ -367,11 +417,33 @@ export default function AdminDashboard() {
     await Promise.all(selectedMessages.map(id =>
       fetch('/api/admin/messages', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
     ))
-    setSelectedMessages([]); fetchData()
+    setMessages(prev => prev.filter(m => !selectedMessages.includes(m._id)))
+    setSelectedMessages([])
   }
 
   const toggleSelectMessage = (id: string) => {
     setSelectedMessages(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  // ─── Settings / About ──────────────────────────────────────────────────────
+  const handleSaveAboutImage = async () => {
+    if (!aboutBase64) return alert('Please select an image first')
+    setUploading(true)
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'aboutProfileImage', value: aboutBase64 })
+      })
+      if (res.ok) {
+        setAboutImage(aboutBase64)
+        setAboutBase64('')
+        alert('About image updated successfully!')
+      } else {
+        const err = await res.json().catch(() => ({}))
+        alert(`Failed to save image: ${err.message || res.statusText}`)
+      }
+    } catch { alert('Network error.') } finally { setUploading(false) }
   }
 
   const handleLogout = async () => {
@@ -420,6 +492,7 @@ export default function AdminDashboard() {
             { id: 'books', label: 'Books', icon: <BookOpen size={18} /> },
             { id: 'timeline', label: 'Education & Achievements', icon: <Trophy size={18} /> },
             { id: 'messages', label: 'Messages', icon: <MessageSquare size={18} /> },
+            { id: 'about', label: 'About', icon: <User size={18} /> },
           ] as const).map(tab => (
             <button
               key={tab.id}
@@ -847,6 +920,53 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                   {messages.length === 0 && <p className="p-8 text-center text-[#6b6b8a] col-span-2">No messages received yet.</p>}
+                </div>
+              </div>
+            )}
+
+            {/* ══ ABOUT TAB ════════════════════════════════════════════════ */}
+            {activeTab === 'about' && (
+              <div className="flex flex-col gap-6 max-w-2xl">
+                <h2 className="font-display text-2xl font-semibold">About Section Image</h2>
+                <div className="glass p-6 flex flex-col gap-6">
+                  <p className="text-[#6b6b8a] text-sm">
+                    Upload a high-quality image to display in the About section of your portfolio.
+                  </p>
+                  
+                  {aboutImage && !aboutBase64 && (
+                    <div className="relative aspect-square w-48 rounded-xl overflow-hidden bg-white/50 border-2 border-white/20">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={aboutImage} alt="Current About" className="object-cover w-full h-full" />
+                    </div>
+                  )}
+
+                  {aboutBase64 && (
+                    <div className="relative aspect-square w-48 rounded-xl overflow-hidden bg-green-50/50 border-2 border-green-500/20">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={aboutBase64} alt="New About" className="object-cover w-full h-full" />
+                      <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1 text-center text-white text-xs font-medium">New Image</div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-4">
+                    <label className="flex flex-col items-center justify-center h-32 px-4 transition bg-white/40 border-2 border-[#c9b8f5]/30 border-dashed rounded-xl appearance-none cursor-pointer hover:border-[#6b3fa0] focus:outline-none">
+                      <span className="flex items-center space-x-2 text-[#6b3fa0]">
+                        <Upload size={20} />
+                        <span className="font-medium">
+                          {aboutBase64 ? 'Select a different image' : (aboutImage ? 'Change Image' : 'Select an image')}
+                        </span>
+                      </span>
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => handleFileChange(e, 'about')} />
+                    </label>
+
+                    <button
+                      onClick={handleSaveAboutImage}
+                      disabled={!aboutBase64 || uploading}
+                      className="px-6 py-3 font-semibold text-white bg-[#6b3fa0] rounded-xl hover:bg-[#854ac4] disabled:opacity-50 transition-colors"
+                    >
+                      {uploading ? 'Saving...' : 'Save Image'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

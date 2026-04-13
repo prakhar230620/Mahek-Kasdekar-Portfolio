@@ -90,7 +90,7 @@ export default function Portfolio({ initialItems = [] }: { initialItems?: any[] 
           <AnimatePresence mode="popLayout">
             {filtered.map((item, i) => (
               <motion.div
-                key={item.id}
+                key={item._id || item.id || i}
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}

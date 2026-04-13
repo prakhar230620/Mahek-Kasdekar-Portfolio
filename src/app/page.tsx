@@ -18,6 +18,7 @@ import { Book } from '@/models/Book'
 import { PortfolioItem } from '@/models/PortfolioItem'
 import { GalleryItem } from '@/models/GalleryItem'
 import Timeline from '@/models/Timeline'
+import { Settings } from '@/models/Settings'
 import { decompressDataUri, decompressData } from '@/lib/compression'
 
 export const revalidate = 60 // Revalidate cache every 60 seconds
@@ -30,6 +31,7 @@ export default async function Home() {
   const rawPortfolio = await PortfolioItem.find({}).sort({ createdAt: -1 }).lean()
   const rawGallery = await GalleryItem.find({}).sort({ createdAt: -1 }).lean()
   const rawTimeline = await Timeline.find({}).sort({ order: 1, createdAt: -1 })
+  const aboutImageSetting = await Settings.findOne({ key: 'aboutProfileImage' }).lean()
 
   // Serialize to plain JS objects, decompressing as needed
   const booksData = rawBooks.map((item: any) => ({
@@ -59,6 +61,10 @@ export default async function Home() {
     // Timeline relies on Mongoose getters which run inside .toObject() so no manual decompress needed
   }))
 
+  const aboutImage = aboutImageSetting && aboutImageSetting.value
+    ? decompressDataUri(aboutImageSetting.value)
+    : undefined
+
   return (
     <main className="relative min-h-screen">
       <CustomCursor />
@@ -68,7 +74,7 @@ export default async function Home() {
       {/* Main Content */}
       <div className="relative z-10 flex flex-col gap-16 md:gap-24 lg:gap-32 pb-12">
         <Hero />
-        <About />
+        <About profileImage={aboutImage} />
         <Education initialTimeline={timelineData} />
         <Skills />
         <Portfolio initialItems={portfolioData} />
