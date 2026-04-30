@@ -21,7 +21,9 @@ import Timeline from '@/models/Timeline'
 import { Settings } from '@/models/Settings'
 import { decompressDataUri, decompressData } from '@/lib/compression'
 
-export const revalidate = 60 // Revalidate cache every 60 seconds
+// force-dynamic: page is server-rendered on every request (no ISR fallback).
+// This avoids the FALLBACK_BODY_TOO_LARGE error caused by large base64 images in ISR pages.
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   await connectToDatabase()
