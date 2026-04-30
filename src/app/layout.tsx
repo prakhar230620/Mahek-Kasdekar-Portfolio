@@ -21,7 +21,7 @@ const dmSans = DM_Sans({
   preload: true,
 })
 
-const BASE_URL = 'https://mahek-kasdekar.vercel.app'
+const BASE_URL = 'https://mahek61.vercel.app'
 
 export const metadata: Metadata = {
   // ── Core ──────────────────────────────────────────────────────────────────────

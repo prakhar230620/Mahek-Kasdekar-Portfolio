@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin', '/api/'],
       },
     ],
-    sitemap: 'https://mahek-kasdekar.vercel.app/sitemap.xml',
-    host: 'https://mahek-kasdekar.vercel.app',
+    sitemap: 'https://mahek61.vercel.app/sitemap.xml',
+    host: 'https://mahek61.vercel.app',
   }
 }

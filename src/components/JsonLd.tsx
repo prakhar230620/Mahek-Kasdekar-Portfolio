@@ -5,7 +5,7 @@
  *          BreadcrumbList, FAQPage, CreativeWork
  */
 
-const BASE_URL = 'https://mahek-kasdekar.vercel.app'
+const BASE_URL = 'https://mahek61.vercel.app'
 
 // ── Person Schema ──────────────────────────────────────────────────────────────
 const personSchema = {
