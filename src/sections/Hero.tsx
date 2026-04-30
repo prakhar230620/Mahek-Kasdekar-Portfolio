@@ -123,6 +123,9 @@ export default function Hero() {
     <section
       id="home"
       className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-12"
+      aria-label="Welcome — Mahek Kasdekar Portfolio"
+      itemScope
+      itemType="https://schema.org/Person"
     >
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row items-center gap-12">
@@ -148,6 +151,7 @@ export default function Hero() {
               variants={itemVariants}
               className="font-display font-semibold italic text-[#1a1a2e] leading-[1.05] tracking-tight"
               style={{ fontSize: 'clamp(52px, 8vw, 100px)', letterSpacing: '-1px' }}
+              itemProp="name"
             >
               Mahek<br />Kasdekar
             </motion.h1>
@@ -161,9 +165,13 @@ export default function Hero() {
             <motion.p
               variants={itemVariants}
               className="max-w-lg text-[17px] text-[#6b6b8a] leading-[1.75]"
+              itemProp="description"
             >
-              A 20-year-old history graduated from Delhi University with a love for words, colour, and the quiet beauty of everyday moments.
+              A creative writer and visual artist — BA History graduate from Delhi University, with a love for words, colour, and the quiet beauty of everyday moments.
             </motion.p>
+            <meta itemProp="jobTitle" content="Creative Writer, Visual Artist & Photographer" />
+            <meta itemProp="alumniOf" content="Delhi University" />
+            <meta itemProp="address" content="Indore, Madhya Pradesh, India" />
 
             {/* CTAs */}
             <motion.div variants={itemVariants} className="flex flex-wrap gap-4 mt-2">
@@ -173,6 +181,7 @@ export default function Hero() {
                 onClick={() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' })}
                 className="clay px-7 py-3.5 text-sm font-semibold text-white transition-shadow"
                 style={{ background: 'linear-gradient(135deg, #f4a7b4, #c9b8f5)', boxShadow: '8px 8px 0px rgba(200,160,180,0.25), inset 0 1px 0 rgba(255,255,255,0.4)' }}
+                aria-label="Explore Mahek Kasdekar's creative work portfolio"
               >
                 Explore My Work
               </motion.button>
@@ -182,6 +191,7 @@ export default function Hero() {
                 onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
                 className="clay px-7 py-3.5 text-sm font-semibold text-[#9b4f6a] transition-shadow"
                 style={{ background: 'linear-gradient(135deg, #ffe8ee, #f3e8ff)' }}
+                aria-label="Contact Mahek Kasdekar"
               >
                 Get In Touch
               </motion.button>

@@ -19,7 +19,11 @@ export default function Education({ initialTimeline = [] }: { initialTimeline?: 
 
 
   return (
-    <section id="education" className="py-24 px-6 lg:px-12">
+    <section
+      id="education"
+      className="py-24 px-6 lg:px-12"
+      aria-label="Education and achievements of Mahek Kasdekar"
+    >
       <div className="mx-auto max-w-4xl">
         {/* Title */}
         <motion.div
@@ -74,6 +78,8 @@ export default function Education({ initialTimeline = [] }: { initialTimeline?: 
                       whileHover={{ scale: 1.02, boxShadow: '0 16px 48px rgba(180,120,140,0.18)' }}
                       className="glass flex-1 p-6"
                       style={{ borderRadius: '20px' }}
+                      itemScope
+                      itemType="https://schema.org/EducationalOccupationalCredential"
                     >
                       <div className="flex sm:hidden items-center gap-3 mb-3">
                         <div
@@ -84,16 +90,17 @@ export default function Education({ initialTimeline = [] }: { initialTimeline?: 
                         </div>
                       </div>
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                        <h3 className="font-display italic font-semibold text-[#1a1a2e] text-xl">{item.title}</h3>
+                        <h3 className="font-display italic font-semibold text-[#1a1a2e] text-xl" itemProp="name">{item.title}</h3>
                         <span
                           className="clay px-3 py-1 text-xs font-medium text-[#9b4f6a] whitespace-nowrap"
                           style={{ background: cardGradients[i % cardGradients.length] }}
+                          itemProp="dateCreated"
                         >
                           {item.period}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-[#c9b8f5] mb-2">{item.institution}</p>
-                      <p className="text-[15px] text-[#6b6b8a] leading-[1.7]">{item.description}</p>
+                      <p className="text-sm font-semibold text-[#c9b8f5] mb-2" itemProp="recognizedBy">{item.institution}</p>
+                      <p className="text-[15px] text-[#6b6b8a] leading-[1.7]" itemProp="description">{item.description}</p>
                     </motion.div>
                   </motion.div>
                 )

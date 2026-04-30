@@ -142,7 +142,11 @@ export default function Books({ initialBooks = [] }: { initialBooks?: any[] }) {
   ) : null
 
   return (
-    <section id="books" className="py-24 px-6 lg:px-12 relative overflow-hidden">
+    <section
+      id="books"
+      className="py-24 px-6 lg:px-12 relative overflow-hidden"
+      aria-label="Books authored by Mahek Kasdekar"
+    >
       <div className="mx-auto max-w-7xl relative z-10">
         {/* Title */}
         <motion.div
@@ -181,6 +185,8 @@ export default function Books({ initialBooks = [] }: { initialBooks?: any[] }) {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="glass group relative overflow-hidden flex flex-col h-full"
                   style={{ borderRadius: '24px' }}
+                  itemScope
+                  itemType="https://schema.org/Book"
                 >
                   {/* Book Cover */}
                   <div className="relative w-full aspect-[4/3] bg-[#f8e7f1] overflow-hidden flex items-center justify-center p-6">
@@ -198,8 +204,20 @@ export default function Books({ initialBooks = [] }: { initialBooks?: any[] }) {
 
                   {/* Details */}
                   <div className="p-6 md:p-8 flex flex-col flex-grow bg-white/40">
-                    <h3 className="font-display italic font-bold text-xl md:text-2xl text-[#1a1a2e] mb-3 leading-tight group-hover:text-[#6b3fa0] transition-colors">{book.title}</h3>
-                    <p className="text-[#6b6b8a] line-clamp-4 leading-relaxed text-sm md:text-base mb-6 flex-grow">{book.description}</p>
+                    <h3
+                      className="font-display italic font-bold text-xl md:text-2xl text-[#1a1a2e] mb-3 leading-tight group-hover:text-[#6b3fa0] transition-colors"
+                      itemProp="name"
+                    >
+                      {book.title}
+                    </h3>
+                    <p
+                      className="text-[#6b6b8a] line-clamp-4 leading-relaxed text-sm md:text-base mb-6 flex-grow"
+                      itemProp="description"
+                    >
+                      {book.description}
+                    </p>
+                    <meta itemProp="author" content="Mahek Kasdekar" />
+                    <meta itemProp="inLanguage" content="en" />
 
                     <div className="flex flex-wrap gap-3 mt-auto">
                       {book.base64Pdf && (

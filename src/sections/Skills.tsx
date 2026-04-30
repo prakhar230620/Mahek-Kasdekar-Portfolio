@@ -24,7 +24,11 @@ const softSkillColors = [
 
 export default function Skills() {
   return (
-    <section id="skills" className="py-24 px-6 lg:px-12">
+    <section
+      id="skills"
+      className="py-24 px-6 lg:px-12"
+      aria-label="Skills and interests of Mahek Kasdekar"
+    >
       <div className="mx-auto max-w-7xl">
         {/* Title */}
         <motion.div
@@ -52,7 +56,7 @@ export default function Skills() {
         >
           Creative Skills
         </motion.p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mb-16" role="list" aria-label="Creative skills">
           {skillItems.map((skill, i) => (
             <motion.div
               key={skill.title}
@@ -63,10 +67,14 @@ export default function Skills() {
               whileHover={{ scale: 1.04, y: -4 }}
               className="clay p-6 flex flex-col gap-3 cursor-default"
               style={{ background: cardGradients[i] }}
+              role="listitem"
+              aria-label={`Skill: ${skill.title} — ${skill.description}`}
+              itemScope
+              itemType="https://schema.org/DefinedTerm"
             >
-              <span className="text-3xl">{skill.icon}</span>
-              <h3 className="font-display italic font-semibold text-[#1a1a2e] text-lg">{skill.title}</h3>
-              <p className="text-sm text-[#6b6b8a] leading-[1.6]">{skill.description}</p>
+              <span className="text-3xl" aria-hidden="true">{skill.icon}</span>
+              <h3 className="font-display italic font-semibold text-[#1a1a2e] text-lg" itemProp="name">{skill.title}</h3>
+              <p className="text-sm text-[#6b6b8a] leading-[1.6]" itemProp="description">{skill.description}</p>
             </motion.div>
           ))}
         </div>

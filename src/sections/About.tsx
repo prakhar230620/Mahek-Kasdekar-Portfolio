@@ -13,7 +13,13 @@ const traitColors = [
 
 export default function About({ profileImage = defaultProfileImage }: { profileImage?: string }) {
   return (
-    <section id="about" className="py-24 px-6 lg:px-12">
+    <section
+      id="about"
+      className="py-24 px-6 lg:px-12"
+      aria-label="About Mahek Kasdekar"
+      itemScope
+      itemType="https://schema.org/AboutPage"
+    >
       <div className="mx-auto max-w-7xl">
         {/* Title */}
         <motion.div
@@ -46,10 +52,12 @@ export default function About({ profileImage = defaultProfileImage }: { profileI
               {/* Profile Image */}
               <Image
                 src={profileImage}
-                alt="Mahek Kasdekar"
+                alt="Mahek Kasdekar — creative writer, watercolour artist and photographer from Delhi University, Indore India"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 unoptimized
+                priority
+                itemProp="image"
               />
               {/* Subtle Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
@@ -88,7 +96,7 @@ export default function About({ profileImage = defaultProfileImage }: { profileI
             </p>
 
             {/* Personality pills */}
-            <div className="flex flex-wrap gap-3 mt-4">
+            <div className="flex flex-wrap gap-3 mt-4" role="list" aria-label="Personality traits of Mahek Kasdekar">
               {personalityTraits.map((trait, i) => (
                 <motion.span
                   key={trait}

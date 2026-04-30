@@ -27,7 +27,11 @@ export default function Portfolio({ initialItems = [] }: { initialItems?: any[] 
   }
 
   return (
-    <section id="portfolio" className="py-24 px-6 lg:px-12">
+    <section
+      id="portfolio"
+      className="py-24 px-6 lg:px-12"
+      aria-label="Creative portfolio of Mahek Kasdekar — writing, art, photography and more"
+    >
       <div className="mx-auto max-w-7xl">
         {/* Title */}
         <motion.div
@@ -61,6 +65,8 @@ export default function Portfolio({ initialItems = [] }: { initialItems?: any[] 
               whileTap={{ scale: 0.97 }}
               onClick={() => setActive(cat)}
               className="px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 border"
+              aria-pressed={active === cat}
+              aria-label={`Filter portfolio by ${cat}`}
               style={
                 active === cat
                   ? {
@@ -102,6 +108,8 @@ export default function Portfolio({ initialItems = [] }: { initialItems?: any[] 
                   whileHover="hover"
                   className="glass group relative overflow-hidden cursor-pointer"
                   style={{ borderRadius: '20px' }}
+                  itemScope
+                  itemType="https://schema.org/CreativeWork"
                 >
                   {/* Image placeholder or Base64 Image */}
                   <div
@@ -135,10 +143,10 @@ export default function Portfolio({ initialItems = [] }: { initialItems?: any[] 
                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium mb-2 ${item.tagColor}`}>
                       {item.tag}
                     </span>
-                    <h3 className="font-display italic font-semibold text-[#1a1a2e] text-lg leading-tight mb-1">
+                    <h3 className="font-display italic font-semibold text-[#1a1a2e] text-lg leading-tight mb-1" itemProp="name">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-[#6b6b8a] truncate">{item.description}</p>
+                    <p className="text-sm text-[#6b6b8a] truncate" itemProp="description">{item.description}</p>
                   </div>
                 </motion.div>
               </motion.div>

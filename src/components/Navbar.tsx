@@ -49,7 +49,10 @@ export default function Navbar() {
   }
 
   return (
-    <header className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+    <header
+      className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4"
+      role="banner"
+    >
       <motion.nav
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -61,22 +64,27 @@ export default function Navbar() {
           maxWidth: '700px',
           width: '100%',
         }}
+        aria-label="Main navigation"
       >
         {/* Logo */}
-        <span
-          className="mr-auto font-display text-xl font-semibold italic text-[#1a1a2e] cursor-pointer"
+        <button
+          className="mr-auto font-display text-xl font-semibold italic text-[#1a1a2e] cursor-pointer bg-transparent border-0 p-0"
           onClick={() => handleNav('#home')}
+          aria-label="Mahek Kasdekar — Go to top"
         >
           MK
-        </span>
+        </button>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-1" role="list">
           {navLinks.map((link) => (
             <button
               key={link.href}
               onClick={() => handleNav(link.href)}
               className="relative px-4 py-2 text-sm font-body font-medium text-[#6b6b8a] transition-colors hover:text-[#1a1a2e]"
+              aria-label={`Navigate to ${link.label} section`}
+              aria-current={active === link.href ? 'page' : undefined}
+              role="listitem"
             >
               {link.label}
               {active === link.href && (
@@ -93,7 +101,9 @@ export default function Navbar() {
         <button
           className="md:hidden ml-auto p-2 text-[#6b6b8a]"
           onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
+          aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -103,11 +113,14 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
+            id="mobile-nav"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="glass absolute top-16 left-4 right-4 p-4 flex flex-col gap-2"
             style={{ borderRadius: '20px' }}
+            role="navigation"
+            aria-label="Mobile navigation menu"
           >
             {navLinks.map((link) => (
               <button
@@ -117,6 +130,7 @@ export default function Navbar() {
                     ? 'bg-[rgba(244,167,180,0.2)] text-[#1a1a2e]'
                     : 'text-[#6b6b8a] hover:text-[#1a1a2e] hover:bg-white/30'
                   }`}
+                aria-current={active === link.href ? 'page' : undefined}
               >
                 {link.label}
               </button>

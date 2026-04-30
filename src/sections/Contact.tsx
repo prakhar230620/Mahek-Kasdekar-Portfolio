@@ -33,7 +33,11 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="py-24 px-6 lg:px-12 relative overflow-hidden">
+    <section
+      id="contact"
+      className="py-24 px-6 lg:px-12 relative overflow-hidden"
+      aria-label="Contact Mahek Kasdekar"
+    >
       <div className="mx-auto max-w-7xl">
         {/* Title */}
         <motion.div
@@ -150,24 +154,29 @@ export default function Contact() {
             {/* Info Cards */}
             <div className="glass p-6 flex items-start gap-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(201,184,245,0.2)' }}>
-                <Mail size={18} className="text-[#6b3fa0]" />
+                <Mail size={18} className="text-[#6b3fa0]" aria-hidden="true" />
               </div>
-              <div>
+              <address className="not-italic">
                 <h4 className="text-sm font-semibold text-[#6b6b8a] mb-1">Email</h4>
-                <a href="mailto:mahek@example.com" className="text-lg font-display italic text-[#1a1a2e] hover:text-[#9b4f6a] transition-colors">
+                <a
+                  href="mailto:mahekkasdekar@gmail.com"
+                  className="text-lg font-display italic text-[#1a1a2e] hover:text-[#9b4f6a] transition-colors"
+                  itemProp="email"
+                  aria-label="Send email to Mahek Kasdekar"
+                >
                   mahekkasdekar@gmail.com
                 </a>
-              </div>
+              </address>
             </div>
 
             <div className="glass p-6 flex items-start gap-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(244,167,180,0.2)' }}>
-                <MapPin size={18} className="text-[#9b4f6a]" />
+                <MapPin size={18} className="text-[#9b4f6a]" aria-hidden="true" />
               </div>
-              <div>
+              <address className="not-italic">
                 <h4 className="text-sm font-semibold text-[#6b6b8a] mb-1">Location</h4>
-                <p className="text-lg font-display italic text-[#1a1a2e]">Indore, India</p>
-              </div>
+                <p className="text-lg font-display italic text-[#1a1a2e]" itemProp="address">Indore, Madhya Pradesh, India</p>
+              </address>
             </div>
 
             {/* Socials Box */}

@@ -29,7 +29,11 @@ export default function Gallery({ initialItems = [] }: { initialItems?: any[] })
   const carouselItems = initialItems.length > 0 ? [...initialItems, ...initialItems] : []
 
   return (
-    <section id="gallery" className="py-24">
+    <section
+      id="gallery"
+      className="py-24"
+      aria-label="Photo gallery of Mahek Kasdekar"
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         {/* Title */}
         <motion.div
@@ -61,12 +65,16 @@ export default function Gallery({ initialItems = [] }: { initialItems?: any[] })
               whileHover={{ scale: 1.04 }}
               className="glass flex-shrink-0 w-52 overflow-hidden cursor-pointer"
               style={{ borderRadius: '20px', height: '220px' }}
+              itemScope
+              itemType="https://schema.org/ImageObject"
             >
               <div
                 className="w-full h-full flex items-end p-3 bg-cover bg-center"
                 style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: gradients[i % gradients.length] }}
+                role="img"
+                aria-label={item.alt || `Gallery photo by Mahek Kasdekar`}
               >
-                <p className="text-xs text-[#6b6b8a] font-medium leading-tight opacity-70 bg-white/40 backdrop-blur-sm p-1 rounded">
+                <p className="text-xs text-[#6b6b8a] font-medium leading-tight opacity-70 bg-white/40 backdrop-blur-sm p-1 rounded" itemProp="caption">
                   {item.alt}
                 </p>
               </div>
@@ -90,12 +98,16 @@ export default function Gallery({ initialItems = [] }: { initialItems?: any[] })
               whileHover={{ scale: 1.02 }}
               className={`glass overflow-hidden cursor-pointer ${idx === 0 ? 'col-span-1 lg:col-span-2 row-span-2' : ''}`}
               style={{ borderRadius: '20px', minHeight: idx === 0 ? '320px' : '150px' }}
+              itemScope
+              itemType="https://schema.org/ImageObject"
             >
               <div
                 className="w-full h-full flex items-end p-5 bg-cover bg-center"
                 style={item.base64Image ? { backgroundImage: `url(${item.base64Image})` } : { background: gradients[idx % gradients.length] }}
+                role="img"
+                aria-label={item.alt || `Gallery photo ${idx + 1} by Mahek Kasdekar`}
               >
-                <p className="font-display italic text-lg text-[#6b6b8a] opacity-70 bg-white/40 backdrop-blur-sm px-2 rounded">
+                <p className="font-display italic text-lg text-[#6b6b8a] opacity-70 bg-white/40 backdrop-blur-sm px-2 rounded" itemProp="caption">
                   {item.alt}
                 </p>
               </div>
